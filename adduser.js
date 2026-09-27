@@ -13,10 +13,7 @@ const defaultDataStructure = {
     switch2: false,
     switch3: false,
     switch4: false,
-    switch5: false,
-    suhu_kamar: "--",
-    status_pintu: "--",
-    gesture_dir: "--"
+    switch5: false
 };
 
 /**
