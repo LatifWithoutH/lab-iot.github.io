@@ -1,0 +1,899 @@
+/* ======================================
+   CSS VARIABLES & RESET (Optimized)
+   ====================================== */
+:root {
+    /* Primary Colors */
+    --primary-navy: #0a1628;
+    --secondary-navy: #1e3a5f;
+    --accent-navy: #2d5a87;
+    
+    /* Gold/Amber Colors */
+    --primary-gold: #ffd700;
+    --secondary-gold: #ffb700;
+    --light-gold: #ffed4e;
+    --dark-gold: #cc9900;
+    
+    /* Neutral Colors */
+    --bg-dark: #0d1b2a;
+    --bg-card: #1b263b;
+    --bg-card-hover: #243447;
+    --text-primary: #e0e1dd;
+    --text-secondary: #778da9;
+    --text-muted: #415a77;
+    
+    /* Status Colors */
+    --success: #06ffa5;
+    --success-dark: #04cc85;
+    --danger: #ff006e;
+    --danger-dark: #cc0058;
+    --warning: #ffbe0b;
+    --info: #00b4d8;
+    
+    /* Gradients */
+    --gradient-gold: linear-gradient(135deg, var(--primary-gold) 0%, var(--light-gold) 100%);
+    --gradient-navy: linear-gradient(135deg, var(--primary-navy) 0%, var(--secondary-navy) 100%);
+    --gradient-card: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-card-hover) 100%);
+    
+    /* Shadows (Disederhanakan untuk performa) */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+    --shadow-gold: 0 4px 16px rgba(255, 215, 0, 0.2);
+    
+    /* Transitions (SPESIFIK, jangan pakai 'all') */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ======================================
+   BODY & BASE STYLES (Ringan)
+   ====================================== */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Gradient statis, tanpa animasi background yang berat */
+    background: var(--gradient-navy);
+    background-attachment: fixed;
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* ======================================
+   LOGIN SCREEN STYLES
+   ====================================== */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.login-card {
+    /* HAPUS backdrop-filter: blur() -> Ganti dengan solid transparan */
+    background: rgba(27, 38, 59, 0.95);
+    padding: 48px 40px;
+    border-radius: var(--radius-xl);
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+    border: 2px solid rgba(255, 215, 0, 0.2);
+    box-shadow: var(--shadow-lg), var(--shadow-gold);
+    animation: slideUp 0.5s ease-out; /* Dipercepat sedikit */
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.login-card h1 {
+    font-size: 2.2rem;
+    margin-bottom: 12px;
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+}
+
+.login-card .subtitle {
+    color: var(--text-secondary);
+    margin-bottom: 32px;
+    font-size: 1rem;
+}
+
+.form-group {
+    text-align: left;
+    margin-bottom: 24px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--primary-gold);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: var(--radius-md);
+    border: 2px solid rgba(255, 215, 0, 0.2);
+    background: rgba(13, 27, 42, 0.8);
+    color: var(--text-primary);
+    font-size: 1rem;
+    outline: none;
+    /* Transisi spesifik hanya untuk properti yang berubah */
+    transition: border-color var(--transition-normal), box-shadow var(--transition-normal), background var(--transition-normal);
+}
+
+.form-group input:focus {
+    border-color: var(--primary-gold);
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.15);
+    background: rgba(13, 27, 42, 1);
+}
+
+.login-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--gradient-gold);
+    color: var(--primary-navy);
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: var(--shadow-gold);
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.3);
+}
+
+.login-btn:active {
+    transform: translateY(0);
+}
+
+.hint {
+    margin-top: 24px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    padding: 12px;
+    background: rgba(255, 215, 0, 0.05);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--primary-gold);
+}
+
+/* ======================================
+   DASHBOARD CONTAINER & HEADER
+   ====================================== */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    position: relative;
+    z-index: 1;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 48px;
+    padding: 32px;
+    background: var(--gradient-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 215, 0, 0.15);
+    box-shadow: var(--shadow-md);
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+header h1 {
+    font-size: 2rem;
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+#user-display {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    color: var(--primary-gold);
+    opacity: 0.9;
+}
+
+.header-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.settings-btn, .logout-btn {
+    padding: 12px 24px;
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform var(--transition-normal), background var(--transition-normal), border-color var(--transition-normal);
+    border: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.settings-btn {
+    background: rgba(255, 215, 0, 0.15);
+    color: var(--primary-gold);
+    border-color: rgba(255, 215, 0, 0.3);
+}
+
+.settings-btn:hover {
+    background: rgba(255, 215, 0, 0.25);
+    border-color: var(--primary-gold);
+    transform: translateY(-2px);
+}
+
+.logout-btn {
+    background: rgba(255, 0, 110, 0.15);
+    color: var(--danger);
+    border-color: rgba(255, 0, 110, 0.3);
+}
+
+.logout-btn:hover {
+    background: rgba(255, 0, 110, 0.25);
+    border-color: var(--danger);
+    transform: translateY(-2px);
+}
+
+/* ======================================
+   DASHBOARD GRID & WIDGETS
+   ====================================== */
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin-bottom: 40px;
+}
+
+.widget {
+    background: var(--gradient-card);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255, 215, 0, 0.1);
+    /* Transisi spesifik untuk hover */
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+    animation: fadeIn 0.4s ease-out;
+    will-change: transform; /* Optimasi GPU untuk hover */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.widget::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--gradient-gold);
+    opacity: 0.8;
+}
+
+.widget:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg), 0 0 20px rgba(255, 215, 0, 0.1);
+    border-color: rgba(255, 215, 0, 0.25);
+}
+
+.widget.hidden { display: none; }
+
+.widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.widget-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-gold);
+}
+
+.widget-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ======================================
+   GAUGE WIDGETS (Optimized)
+   ====================================== */
+.gauge-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 0;
+}
+
+.gauge-circle {
+    position: relative;
+    width: 160px;
+    height: 160px;
+}
+
+.gauge-circle svg {
+    transform: rotate(-90deg);
+    width: 100%;
+    height: 100%;
+}
+
+.gauge-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.08);
+    stroke-width: 10;
+}
+
+.gauge-fill {
+    fill: none;
+    stroke: var(--primary-gold); /* Gradient stroke berat, ganti solid gold untuk performa */
+    stroke-width: 10;
+    stroke-linecap: round;
+    stroke-dasharray: 284;
+    stroke-dashoffset: 284;
+    /* Transisi lebih cepat dan efisien */
+    transition: stroke-dashoffset 0.5s ease-out;
+    will-change: stroke-dashoffset;
+}
+
+.gauge-text {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.gauge-text span {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--primary-gold);
+    display: block;
+    line-height: 1;
+}
+
+.gauge-text small {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+/* ======================================
+   HORIZONTAL LEVEL WIDGETS (Optimized)
+   ====================================== */
+.hlevel-bar {
+    width: 100%;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    margin: 20px 0;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.hlevel-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--success) 0%, var(--primary-gold) 100%);
+    width: 0%;
+    /* Transisi spesifik + will-change */
+    transition: width 0.5s ease-out;
+    will-change: width;
+    border-radius: var(--radius-md);
+}
+
+/* HAPUS animasi shimmer infinite yang berat, ganti dengan efek static glossy sederhana jika perlu, 
+   atau biarkan polos agar sangat ringan */
+
+.hlevel-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* ======================================
+   INDICATOR & SWITCH WIDGETS
+   ====================================== */
+.indicator-content {
+    text-align: center;
+    padding: 28px 20px;
+    background: rgba(255, 215, 0, 0.05);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 215, 0, 0.15);
+}
+
+.indicator-text {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.switch-container {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 64px;
+    height: 34px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    transition: background var(--transition-normal), border-color var(--transition-normal);
+    border-radius: 34px;
+    border: 2px solid rgba(255, 215, 0, 0.2);
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 24px;
+    width: 24px;
+    left: 3px;
+    bottom: 3px;
+    background: var(--text-secondary);
+    transition: transform var(--transition-normal), background var(--transition-normal);
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background: rgba(255, 215, 0, 0.2);
+    border-color: var(--primary-gold);
+}
+
+input:checked + .slider:before {
+    transform: translateX(30px);
+    background: var(--primary-gold);
+}
+
+/* ======================================
+   ALERT WIDGETS (Optimized Pulse)
+   ====================================== */
+.alert-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 24px 20px;
+    background: rgba(6, 255, 165, 0.08);
+    border-radius: var(--radius-md);
+    border: 2px solid rgba(6, 255, 165, 0.3);
+    transition: border-color 0.5s ease, background 0.5s ease;
+}
+
+.alert-content.danger {
+    background: rgba(255, 0, 110, 0.08);
+    border-color: rgba(255, 0, 110, 0.3);
+    /* GANTI animasi box-shadow yang berat dengan border-color/opacity */
+    animation: pulse-light 1.5s infinite;
+}
+
+@keyframes pulse-light {
+    0%, 100% { 
+        border-color: rgba(255, 0, 110, 0.3); 
+        background: rgba(255, 0, 110, 0.08);
+    }
+    50% { 
+        border-color: rgba(255, 0, 110, 0.8); 
+        background: rgba(255, 0, 110, 0.15);
+    }
+}
+
+.alert-icon { font-size: 3rem; line-height: 1; }
+.alert-text { font-size: 1.2rem; font-weight: 700; color: var(--success); }
+.alert-content.danger .alert-text { color: var(--danger); }
+
+/* ======================================
+   MODAL STYLES (Optimized)
+   ====================================== */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    /* HAPUS backdrop-filter: blur(8px) */
+    background-color: rgba(10, 22, 40, 0.95);
+    animation: fadeIn 0.2s ease;
+}
+
+.modal.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal-content {
+    background: var(--gradient-card);
+    border-radius: var(--radius-xl);
+    width: 100%;
+    max-width: 550px;
+    max-height: 85vh;
+    overflow-y: auto;
+    border: 2px solid rgba(255, 215, 0, 0.25);
+    box-shadow: var(--shadow-lg), var(--shadow-gold);
+    animation: slideUp 0.3s ease-out;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 28px;
+    border-bottom: 2px solid rgba(255, 215, 0, 0.15);
+}
+
+.modal-header h2 {
+    color: var(--primary-gold);
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 2rem;
+    cursor: pointer;
+    transition: color var(--transition-fast), background var(--transition-fast);
+    width: 36px; height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+}
+
+.close-btn:hover {
+    color: var(--danger);
+    background: rgba(255, 0, 110, 0.1);
+}
+
+.modal-body { padding: 20px 28px 28px; }
+
+.setting-item {
+    padding: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    transition: background var(--transition-fast);
+    border-radius: var(--radius-sm);
+}
+
+.setting-item:hover { background: rgba(255, 215, 0, 0.05); }
+.setting-item:last-child { border-bottom: none; }
+
+.setting-item label {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    font-size: 1rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.setting-item input[type="checkbox"] {
+    width: 20px; height: 20px;
+    cursor: pointer;
+    accent-color: var(--primary-gold);
+}
+
+.setting-item span { flex: 1; }
+
+/* ======================================
+   SCROLLBAR & RESPONSIVE
+   ====================================== */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb {
+    background: var(--accent-navy);
+    border-radius: 4px;
+    border: 2px solid var(--bg-dark);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--primary-gold); }
+
+@media (max-width: 768px) {
+    header { flex-direction: column; text-align: center; padding: 24px; }
+    header h1 { font-size: 1.6rem; }
+    .header-actions { width: 100%; justify-content: center; }
+    .dashboard { grid-template-columns: 1fr; gap: 20px; }
+    .widget { padding: 20px; }
+    .login-card { padding: 32px 24px; }
+    .gauge-circle { width: 140px; height: 140px; }
+    .gauge-text span { font-size: 1.8rem; }
+}
+
+@media (max-width: 480px) {
+    .container { padding: 16px; }
+    .widget { padding: 16px; }
+    .widget-title { font-size: 1rem; }
+    .widget-value { font-size: 1.2rem; }
+}
+
+.hidden { display: none !important; }
+
+/* ======================================
+   LOADING OVERLAY & ANIMATION
+   ====================================== */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(10, 22, 40, 0.95); /* Navy gelap solid, ringan untuk GPU */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.3s ease;
+}
+
+.loading-overlay.hidden {
+    opacity: 0;
+    pointer-events: none; /* Agar tidak bisa diklik saat tersembunyi */
+}
+
+.spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(255, 215, 0, 0.2); /* Gold transparan */
+    border-top-color: var(--primary-gold); /* Gold solid */
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-overlay p {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    animation: pulse-text 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-text {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
+
+/* ==========================================
+   SETTINGS FULL PAGE LAYOUT
+   ========================================== */
+.settings-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--bg-primary, #0f172a); /* Sesuaikan dengan warna background dashboardmu */
+    color: var(--text-primary, #f8fafc);
+}
+
+/* Header Settings */
+.settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.settings-header h1 {
+    font-size: 1.2rem;
+    margin: 0;
+    font-weight: 600;
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-primary, #f8fafc);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.spacer {
+    width: 100px; /* Menyeimbangkan flexbox agar judul benar-benar di tengah */
+}
+
+/* Konten Utama (Scrollable) */
+.settings-content {
+    flex: 1;
+    padding: 24px;
+    max-width: 1000px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+/* Group Widget */
+.widget-group {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.widget-group h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    color: var(--primary-gold, #fbbf24); /* Sesuaikan warna aksen */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 12px;
+}
+
+/* Grid Checkbox */
+.widget-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+/* Checkbox Label */
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    padding: 12px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.checkbox-label:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-gold, #fbbf24);
+    cursor: pointer;
+}
+
+.checkbox-label span {
+    font-size: 0.95rem;
+}
+
+.key-hint {
+    font-size: 0.75rem;
+    opacity: 0.5;
+    font-weight: normal;
+}
+
+/* Footer Sticky */
+.settings-footer {
+    padding: 16px 24px;
+    background: rgba(0, 0, 0, 0.3);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: flex-end;
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+}
+
+.primary-btn {
+    background: var(--primary-gold, #fbbf24);
+    color: #000;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.primary-btn:hover {
+    opacity: 0.9;
+}
+
+/* Status States */
+.loading-state, .empty-state, .error-state {
+    text-align: center;
+    padding: 40px;
+    opacity: 0.7;
+    font-size: 1.1rem;
+}
+.error-state { color: #ef4444; }
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+    .widget-grid {
+        grid-template-columns: 1fr; /* 1 kolom di HP */
+    }
+    .settings-header h1 {
+        font-size: 1rem;
+    }
+}

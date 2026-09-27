@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - IoT Monitoring</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <div class="header-info">
+                <h1>IoT Dashboard</h1>
+                <p class="subtitle">Sistem Monitoring Real-time</p>
+                <p class="user-info" id="user-display"></p>
+            </div>
+			<!-- Ganti bagian header-actions di dashboard.html -->
+            <div class="header-actions">
+                <a href="settings.html" class="settings-btn">Pengaturan</a>
+                <button id="logoutBtn" class="logout-btn">Keluar</button>
+            </div>
+        </header>
+
+        <!-- MAIN DASHBOARD -->
+        <main class="dashboard" id="dynamic-dashboard">
+            <p class="loading-text">Memuat data dari server...</p>
+        </main>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
