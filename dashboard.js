@@ -286,3 +286,173 @@ fetchAndRenderDashboard(); // Panggil sekali di awal
 
 // Polling setiap 3 detik
 pollingInterval = setInterval(fetchAndRenderDashboard, 3000);
+
+// ==========================================
+// FUNGSI DOWNLOAD KODE ARDUINO OTOMATIS
+// ==========================================
+function downloadArduinoCode() {
+    const moduleKey = document.getElementById('moduleSelect').value;
+    
+    // 1. Validasi
+    if (!moduleKey) {
+        alert('⚠️ Silakan pilih modul terlebih dahulu!');
+        return;
+    }
+    if (!ARDUINO_TEMPLATES[moduleKey]) {
+        alert('❌ Template kode untuk modul ini belum tersedia.');
+        return;
+    }
+
+    // 2. Ambil data user dari LocalStorage
+    const wifiSsid = localStorage.getItem('iot_wifi_ssid') || 'UMS Wifi';
+    const wifiPass = localStorage.getItem('iot_wifi_pass') || 'ums.wifi';
+    const dbUrl = localStorage.getItem('iot_db_url');
+    const dbSecret = localStorage.getItem('iot_db_secret');
+    const userId = localStorage.getItem('iot_user_id');
+
+    // 3. Racik Kode (Replace Placeholder)
+    let finalCode = ARDUINO_TEMPLATES[moduleKey];
+    finalCode = finalCode.replaceAll('{{WIFI_SSID}}', wifiSsid);
+    finalCode = finalCode.replaceAll('{{WIFI_PASSWORD}}', wifiPass);
+    finalCode = finalCode.replaceAll('{{DATABASE_URL}}', dbUrl);
+    finalCode = finalCode.replaceAll('{{API_KEY}}', dbSecret);
+    finalCode = finalCode.replaceAll('{{USER_ID}}', userId);
+
+    // 4. Buat File Blob dan Trigger Download
+    const blob = new Blob([finalCode], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    
+    // Nama file otomatis: modul04_latif_2023-10-25.ino
+    const date = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `${moduleKey}_${userId}_${date}.ino`;
+    
+    document.body.appendChild(a);
+    a.click(); // Eksekusi download
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url); // Bersihkan memori
+    
+    console.log(`✅ Kode ${moduleKey} berhasil diracik dan diunduh!`);
+}
+// ==========================================
+// FUNGSI AUTO-POPULATE DROPDOWN MODUL
+// ==========================================
+function populateModuleDropdown() {
+    const select = document.getElementById('moduleSelect');
+    if (!select || typeof ARDUINO_TEMPLATES === 'undefined') return;
+    
+    // Hapus semua opsi kecuali yang pertama (default)
+    while (select.options.length > 1) {
+        select.remove(1);
+    }
+    
+    // Mapping label yang rapi untuk setiap key modul
+    const moduleLabels = {
+        "modul04": "Modul 04 - LED, Buzzer, Relay",
+        "modul05LCD": "Modul 05 - LCD 16x2 I2C",
+        "modul05OLED": "Modul 05 - OLED Display 128x64",
+        "modul06LDR": "Modul 06 - Sensor Cahaya LDR",
+        "modul06BH1750": "Modul 06 - Sensor Cahaya BH1750",
+        "modul06POTENSI": "Modul 06 - Potensiometer",
+        "modul07DHT": "Modul 07 - DHT11 (Suhu & Kelembaban)",
+        "modul08": "Modul 08 - BMP180 (Cuaca & Ketinggian)",
+        "modul09": "Modul 09 - Smart Agriculture (Tanah/Hujan)",
+        "modul10PIR": "Modul 10 - Sensor PIR (Gerakan)",
+        "modul10BAG02": "Modul 10 - Sensor Ultrasonik (Jarak)",
+        "modul11": "Modul 11 - Motor Servo",
+        "modul12": "Modul 12 - RFID MFRC522",
+        "modul13REG": "Modul 13 - Fingerprint (Enroll/Daftar)",
+        "modul13READ": "Modul 13 - Fingerprint (Read/Verifikasi)",
+        "modul13DEL": "Modul 13 - Fingerprint (Delete/Hapus)",
+        "modul14": "Modul 14 - Sensor Gesture APDS9960"
+    };
+    
+    // Loop semua keys di ARDUINO_TEMPLATES dan buat option
+    Object.keys(ARDUINO_TEMPLATES).forEach(key => {
+        const option = document.createElement('option');
+        option.value = key;
+        // Pakai label dari mapping, kalau tidak ada pakai key-nya langsung
+        option.textContent = moduleLabels[key] || key;
+        select.appendChild(option);
+    });
+    
+    console.log(`✅ Dropdown modul terisi: ${Object.keys(ARDUINO_TEMPLATES).length} modul tersedia`);
+}
+
+// Panggil fungsi ini saat halaman dimuat
+// Tambahkan di bagian paling bawah dashboard.js, setelah pollingInterval:
+populateModuleDropdown();
+
+// ==========================================
+// FUNGSI DOWNLOAD SEMUA MODUL (.ZIP)
+// ==========================================
+async function downloadAllModules() {
+    const statusEl = document.getElementById('download-status');
+    statusEl.style.display = 'block';
+    statusEl.textContent = '⏳ Sedang meracik file ZIP... Mohon tunggu.';
+
+    try {
+        // 1. Ambil data user dari LocalStorage
+        const wifiSsid = localStorage.getItem('iot_wifi_ssid') || 'UMS Wifi';
+        const wifiPass = localStorage.getItem('iot_wifi_pass') || 'ums.wifi';
+        const dbUrl = localStorage.getItem('iot_db_url');
+        const dbSecret = localStorage.getItem('iot_db_secret');
+        const userId = localStorage.getItem('iot_user_id');
+
+        // 2. Inisialisasi JSZip
+        const zip = new JSZip();
+
+        // 3. Mapping struktur folder agar sesuai dengan file 'semua_modul.txt' kamu
+        const folderStructure = {
+            "modul04": "modul04/modul04.ino",
+            "modul05LCD": "modul05/modul05LCD.ino",
+            "modul05OLED": "modul05/modul05OLED.ino",
+            "modul06BH1750": "modul06/modul06BH1750.ino",
+            "modul06LDR": "modul06/modul06LDR.ino",
+            "modul06POTENSI": "modul06/modul06POTENSI.ino",
+            "modul07DHT": "modul07/modul07DHT.ino",
+            "modul08": "modul08/modul08.ino",
+            "modul09": "modul09/modul09.ino",
+            "modul10BAG02": "modul10/modul10BAG02.ino",
+            "modul10PIR": "modul10/modul10PIR.ino",
+            "modul11": "modul11/modul11.ino",
+            "modul12": "modul12/modul12.ino",
+            "modul13DEL": "modul13/modul13DEL.ino",
+            "modul13READ": "modul13/modul13READ.ino",
+            "modul13REG": "modul13/modul13REG.ino",
+            "modul14": "modul14/modul14.ino"
+        };
+
+        // 4. Loop semua template, replace variabel, dan masukkan ke ZIP
+        for (const [key, template] of Object.entries(ARDUINO_TEMPLATES)) {
+            let finalCode = template
+                .replaceAll('{{WIFI_SSID}}', wifiSsid)
+                .replaceAll('{{WIFI_PASSWORD}}', wifiPass)
+                .replaceAll('{{DATABASE_URL}}', dbUrl)
+                .replaceAll('{{API_KEY}}', dbSecret)
+                .replaceAll('{{USER_ID}}', userId);
+
+            // Tentukan nama file & folder. Jika tidak ada di mapping, pakai default
+            const filePath = folderStructure[key] || `${key}/${key}.ino`;
+            
+            // Tambahkan file ke dalam objek ZIP
+            zip.file(filePath, finalCode);
+        }
+
+        // 5. Generate file ZIP secara asynchronous
+        const content = await zip.generateAsync({ type: "blob" });
+        
+        // 6. Trigger download menggunakan FileSaver.js
+        const date = new Date().toISOString().slice(0, 10);
+        saveAs(content, `Kode_Arduino_Lengkap_${userId}_${date}.zip`);
+
+        statusEl.textContent = '✅ Berhasil! File ZIP telah diunduh.';
+        setTimeout(() => { statusEl.style.display = 'none'; }, 3000);
+
+    } catch (error) {
+        console.error("Gagal membuat ZIP:", error);
+        statusEl.textContent = '❌ Gagal membuat file ZIP. Cek console untuk detail.';
+        statusEl.style.color = 'var(--danger)';
+    }
+}

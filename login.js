@@ -17,6 +17,13 @@ loginForm.addEventListener('submit', async (e) => {
     const dbUrl = document.getElementById('db-url').value.trim();
     const dbSecret = document.getElementById('db-secret').value.trim();
     const userId = document.getElementById('user-id').value.trim(); // <-- PERUBAHAN DI SINI
+	// Di dalam event listener submit form login:
+	const wifiSsid = document.getElementById('wifiSsid').value;
+	const wifiPass = document.getElementById('wifiPass').value;
+
+	localStorage.setItem('iot_wifi_ssid', wifiSsid);
+	localStorage.setItem('iot_wifi_pass', wifiPass);
+	// ... (lanjut simpan dbUrl, dbSecret, userId seperti biasa)
 
     if (!userId || !dbUrl || !dbSecret) {
         alert("Mohon lengkapi semua field!");
