@@ -940,22 +940,43 @@ input:checked + .slider:before {
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 16px;
+    gap: 12px;
+    margin-bottom: 12px;
 }
 
 .form-row .form-group {
-    margin-bottom: 0; /* Reset margin karena sudah ada gap */
+    margin-bottom: 0;
 }
 
-/* Responsive: jadi vertikal di mobile */
+/* Responsive: tetap berdampingan di mobile, tapi lebih kecil */
 @media (max-width: 600px) {
+    .form-row {
+        grid-template-columns: 1fr 1fr; /* Tetap 2 kolom */
+        gap: 8px; /* Gap lebih kecil */
+    }
+    
+    .form-row .form-group {
+        margin-bottom: 0;
+    }
+    
+    .form-row .form-group label {
+        font-size: 0.7rem; /* Label lebih kecil */
+    }
+    
+    .form-row .form-group input {
+        padding: 6px 8px; /* Input lebih compact */
+        font-size: 0.8rem;
+    }
+}
+
+/* Untuk layar sangat kecil (< 400px), baru jadi vertikal */
+@media (max-width: 400px) {
     .form-row {
         grid-template-columns: 1fr;
         gap: 0;
     }
     
     .form-row .form-group {
-        margin-bottom: 16px;
+        margin-bottom: 12px;
     }
 }
