@@ -1,5 +1,5 @@
 /* ======================================
-   CSS VARIABLES & RESET (Optimized)
+   CSS VARIABLES & RESET (Compact)
    ====================================== */
 :root {
     /* Primary Colors */
@@ -34,21 +34,21 @@
     --gradient-navy: linear-gradient(135deg, var(--primary-navy) 0%, var(--secondary-navy) 100%);
     --gradient-card: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-card-hover) 100%);
     
-    /* Shadows (Disederhanakan untuk performa) */
+    /* Shadows */
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
     --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
     --shadow-gold: 0 4px 16px rgba(255, 215, 0, 0.2);
     
-    /* Transitions (SPESIFIK, jangan pakai 'all') */
+    /* Transitions */
     --transition-fast: 0.2s ease;
     --transition-normal: 0.3s ease;
     
-    /* Border Radius */
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
-    --radius-xl: 24px;
+    /* Border Radius (Reduced) */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 20px;
 }
 
 * {
@@ -58,43 +58,41 @@
 }
 
 /* ======================================
-   BODY & BASE STYLES (Ringan)
+   BODY & BASE STYLES
    ====================================== */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    /* Gradient statis, tanpa animasi background yang berat */
     background: var(--gradient-navy);
     background-attachment: fixed;
     color: var(--text-primary);
     min-height: 100vh;
-    line-height: 1.6;
+    line-height: 1.5;
     overflow-x: hidden;
 }
 
 /* ======================================
-   LOGIN SCREEN STYLES
+   LOGIN SCREEN STYLES (Super Compact)
    ====================================== */
 .login-container {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    padding: 20px;
+    padding: 16px;
     position: relative;
     z-index: 1;
 }
 
 .login-card {
-    /* HAPUS backdrop-filter: blur() -> Ganti dengan solid transparan */
     background: rgba(27, 38, 59, 0.95);
-    padding: 48px 40px;
+    padding: 20px 24px; /* Dikurangi dari 32px 28px */
     border-radius: var(--radius-xl);
     width: 100%;
-    max-width: 450px;
+    max-width: 420px;
     text-align: center;
     border: 2px solid rgba(255, 215, 0, 0.2);
     box-shadow: var(--shadow-lg), var(--shadow-gold);
-    animation: slideUp 0.5s ease-out; /* Dipercepat sedikit */
+    animation: slideUp 0.5s ease-out;
 }
 
 @keyframes slideUp {
@@ -103,8 +101,9 @@ body {
 }
 
 .login-card h1 {
-    font-size: 2.2rem;
-    margin-bottom: 12px;
+    font-size: 1.8rem;
+    margin-bottom: 4px; /* Dikurangi dari 8px */
+    margin-top: 0; /* Pastikan tidak ada margin atas */
     background: var(--gradient-gold);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -114,35 +113,45 @@ body {
 
 .login-card .subtitle {
     color: var(--text-secondary);
-    margin-bottom: 32px;
-    font-size: 1rem;
+    margin-bottom: 16px; /* Dikurangi dari 24px */
+    font-size: 0.85rem;
 }
 
 .form-group {
     text-align: left;
-    margin-bottom: 24px;
+    margin-bottom: 12px; /* Dikurangi dari 16px */
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px; /* Dikurangi dari 16px */
+    margin-bottom: 12px;
+}
+
+.form-row .form-group {
+    margin-bottom: 0;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 4px; /* Dikurangi dari 6px */
     color: var(--primary-gold);
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.75rem; /* Dikurangi sedikit */
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .form-group input {
     width: 100%;
-    padding: 14px 18px;
+    padding: 8px 12px; /* Dikurangi dari 10px 14px */
     border-radius: var(--radius-md);
     border: 2px solid rgba(255, 215, 0, 0.2);
     background: rgba(13, 27, 42, 0.8);
     color: var(--text-primary);
-    font-size: 1rem;
+    font-size: 0.9rem; /* Dikurangi dari 0.95rem */
     outline: none;
-    /* Transisi spesifik hanya untuk properti yang berubah */
     transition: border-color var(--transition-normal), box-shadow var(--transition-normal), background var(--transition-normal);
 }
 
@@ -152,18 +161,25 @@ body {
     background: rgba(13, 27, 42, 1);
 }
 
+.form-group small {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
 .login-btn {
     width: 100%;
-    padding: 16px;
+    padding: 10px; /* Dikurangi dari 12px */
     background: var(--gradient-gold);
     color: var(--primary-navy);
     border: none;
     border-radius: var(--radius-md);
-    font-size: 1.1rem;
+    font-size: 0.95rem; /* Dikurangi dari 1rem */
     font-weight: 700;
     cursor: pointer;
     transition: transform var(--transition-normal), box-shadow var(--transition-normal);
-    margin-top: 8px;
+    margin-top: 4px;
     text-transform: uppercase;
     letter-spacing: 1px;
     box-shadow: var(--shadow-gold);
@@ -179,22 +195,52 @@ body {
 }
 
 .hint {
-    margin-top: 24px;
-    font-size: 0.85rem;
+    margin-top: 12px; /* Dikurangi dari 16px */
+    font-size: 0.75rem; /* Dikurangi dari 0.8rem */
     color: var(--text-secondary);
-    padding: 12px;
+    padding: 8px; /* Dikurangi dari 10px */
     background: rgba(255, 215, 0, 0.05);
     border-radius: var(--radius-sm);
     border-left: 3px solid var(--primary-gold);
 }
 
+/* Responsive untuk layar kecil */
+@media (max-width: 600px) {
+    .login-card {
+        padding: 16px 18px; /* Lebih compact lagi di mobile */
+    }
+    
+    .login-card h1 {
+        font-size: 1.6rem;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+    
+    .form-row .form-group {
+        margin-bottom: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-container {
+        padding: 12px;
+    }
+    
+    .login-card {
+        padding: 14px 16px;
+    }
+}
+
 /* ======================================
-   DASHBOARD CONTAINER & HEADER
+   DASHBOARD CONTAINER & HEADER (Compact)
    ====================================== */
 .container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 32px 24px;
+    padding: 20px 16px;
     position: relative;
     z-index: 1;
 }
@@ -203,18 +249,18 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 48px;
-    padding: 32px;
+    margin-bottom: 24px;
+    padding: 20px 24px;
     background: var(--gradient-card);
     border-radius: var(--radius-lg);
     border: 1px solid rgba(255, 215, 0, 0.15);
     box-shadow: var(--shadow-md);
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 12px;
 }
 
 header h1 {
-    font-size: 2rem;
+    font-size: 1.6rem;
     background: var(--gradient-gold);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -224,33 +270,33 @@ header h1 {
 
 .subtitle {
     color: var(--text-secondary);
-    font-size: 0.95rem;
+    font-size: 0.85rem;
 }
 
 #user-display {
-    margin-top: 8px;
-    font-size: 0.9rem;
+    margin-top: 4px;
+    font-size: 0.8rem;
     color: var(--primary-gold);
     opacity: 0.9;
 }
 
 .header-actions {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     flex-wrap: wrap;
 }
 
 .settings-btn, .logout-btn {
-    padding: 12px 24px;
+    padding: 8px 16px;
     border-radius: var(--radius-md);
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
     transition: transform var(--transition-normal), background var(--transition-normal), border-color var(--transition-normal);
     border: 2px solid transparent;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .settings-btn {
@@ -278,27 +324,26 @@ header h1 {
 }
 
 /* ======================================
-   DASHBOARD GRID & WIDGETS
+   DASHBOARD GRID & WIDGETS (Compact)
    ====================================== */
 .dashboard {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 24px;
-    margin-bottom: 40px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
 }
 
 .widget {
     background: var(--gradient-card);
     border-radius: var(--radius-lg);
-    padding: 24px;
+    padding: 16px;
     box-shadow: var(--shadow-md);
     border: 1px solid rgba(255, 215, 0, 0.1);
-    /* Transisi spesifik untuk hover */
     transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
     position: relative;
     overflow: hidden;
     animation: fadeIn 0.4s ease-out;
-    will-change: transform; /* Optimasi GPU untuk hover */
+    will-change: transform;
 }
 
 @keyframes fadeIn {
@@ -310,7 +355,7 @@ header h1 {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 4px;
+    height: 3px;
     background: var(--gradient-gold);
     opacity: 0.8;
 }
@@ -327,19 +372,19 @@ header h1 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 16px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .widget-title {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: var(--primary-gold);
 }
 
 .widget-value {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     font-weight: 700;
     background: var(--gradient-gold);
     -webkit-background-clip: text;
@@ -348,19 +393,19 @@ header h1 {
 }
 
 /* ======================================
-   GAUGE WIDGETS (Optimized)
+   GAUGE WIDGETS (Compact)
    ====================================== */
 .gauge-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px 0;
+    padding: 12px 0;
 }
 
 .gauge-circle {
     position: relative;
-    width: 160px;
-    height: 160px;
+    width: 130px;
+    height: 130px;
 }
 
 .gauge-circle svg {
@@ -377,12 +422,11 @@ header h1 {
 
 .gauge-fill {
     fill: none;
-    stroke: var(--primary-gold); /* Gradient stroke berat, ganti solid gold untuk performa */
+    stroke: var(--primary-gold);
     stroke-width: 10;
     stroke-linecap: round;
     stroke-dasharray: 284;
     stroke-dashoffset: 284;
-    /* Transisi lebih cepat dan efisien */
     transition: stroke-dashoffset 0.5s ease-out;
     will-change: stroke-dashoffset;
 }
@@ -395,7 +439,7 @@ header h1 {
 }
 
 .gauge-text span {
-    font-size: 2.2rem;
+    font-size: 1.8rem;
     font-weight: 700;
     color: var(--primary-gold);
     display: block;
@@ -404,21 +448,21 @@ header h1 {
 
 .gauge-text small {
     display: block;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
-    margin-top: 4px;
+    margin-top: 2px;
 }
 
 /* ======================================
-   HORIZONTAL LEVEL WIDGETS (Optimized)
+   HORIZONTAL LEVEL WIDGETS (Compact)
    ====================================== */
 .hlevel-bar {
     width: 100%;
-    height: 32px;
+    height: 28px;
     background: rgba(255, 255, 255, 0.06);
     border-radius: var(--radius-md);
     overflow: hidden;
-    margin: 20px 0;
+    margin: 12px 0;
     box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
@@ -426,36 +470,32 @@ header h1 {
     height: 100%;
     background: linear-gradient(90deg, var(--success) 0%, var(--primary-gold) 100%);
     width: 0%;
-    /* Transisi spesifik + will-change */
     transition: width 0.5s ease-out;
     will-change: width;
     border-radius: var(--radius-md);
 }
 
-/* HAPUS animasi shimmer infinite yang berat, ganti dengan efek static glossy sederhana jika perlu, 
-   atau biarkan polos agar sangat ringan */
-
 .hlevel-label {
     display: flex;
     justify-content: space-between;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
     font-weight: 500;
 }
 
 /* ======================================
-   INDICATOR & SWITCH WIDGETS
+   INDICATOR & SWITCH WIDGETS (Compact)
    ====================================== */
 .indicator-content {
     text-align: center;
-    padding: 28px 20px;
+    padding: 20px 16px;
     background: rgba(255, 215, 0, 0.05);
     border-radius: var(--radius-md);
     border: 1px solid rgba(255, 215, 0, 0.15);
 }
 
 .indicator-text {
-    font-size: 1.6rem;
+    font-size: 1.3rem;
     font-weight: 700;
     color: var(--text-primary);
     text-transform: uppercase;
@@ -465,14 +505,14 @@ header h1 {
 .switch-container {
     display: flex;
     justify-content: center;
-    padding: 20px 0;
+    padding: 12px 0;
 }
 
 .switch {
     position: relative;
     display: inline-block;
-    width: 64px;
-    height: 34px;
+    width: 56px;
+    height: 30px;
 }
 
 .switch input {
@@ -487,15 +527,15 @@ header h1 {
     top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(255, 255, 255, 0.1);
     transition: background var(--transition-normal), border-color var(--transition-normal);
-    border-radius: 34px;
+    border-radius: 30px;
     border: 2px solid rgba(255, 215, 0, 0.2);
 }
 
 .slider:before {
     position: absolute;
     content: "";
-    height: 24px;
-    width: 24px;
+    height: 20px;
+    width: 20px;
     left: 3px;
     bottom: 3px;
     background: var(--text-secondary);
@@ -509,19 +549,19 @@ input:checked + .slider {
 }
 
 input:checked + .slider:before {
-    transform: translateX(30px);
+    transform: translateX(26px);
     background: var(--primary-gold);
 }
 
 /* ======================================
-   ALERT WIDGETS (Optimized Pulse)
+   ALERT WIDGETS (Compact)
    ====================================== */
 .alert-content {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 20px;
-    padding: 24px 20px;
+    gap: 14px;
+    padding: 16px 14px;
     background: rgba(6, 255, 165, 0.08);
     border-radius: var(--radius-md);
     border: 2px solid rgba(6, 255, 165, 0.3);
@@ -531,7 +571,6 @@ input:checked + .slider:before {
 .alert-content.danger {
     background: rgba(255, 0, 110, 0.08);
     border-color: rgba(255, 0, 110, 0.3);
-    /* GANTI animasi box-shadow yang berat dengan border-color/opacity */
     animation: pulse-light 1.5s infinite;
 }
 
@@ -546,12 +585,12 @@ input:checked + .slider:before {
     }
 }
 
-.alert-icon { font-size: 3rem; line-height: 1; }
-.alert-text { font-size: 1.2rem; font-weight: 700; color: var(--success); }
+.alert-icon { font-size: 2.4rem; line-height: 1; }
+.alert-text { font-size: 1rem; font-weight: 700; color: var(--success); }
 .alert-content.danger .alert-text { color: var(--danger); }
 
 /* ======================================
-   MODAL STYLES (Optimized)
+   MODAL STYLES (Compact)
    ====================================== */
 .modal {
     display: none;
@@ -559,7 +598,6 @@ input:checked + .slider:before {
     z-index: 1000;
     left: 0; top: 0;
     width: 100%; height: 100%;
-    /* HAPUS backdrop-filter: blur(8px) */
     background-color: rgba(10, 22, 40, 0.95);
     animation: fadeIn 0.2s ease;
 }
@@ -568,14 +606,14 @@ input:checked + .slider:before {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
+    padding: 16px;
 }
 
 .modal-content {
     background: var(--gradient-card);
     border-radius: var(--radius-xl);
     width: 100%;
-    max-width: 550px;
+    max-width: 500px;
     max-height: 85vh;
     overflow-y: auto;
     border: 2px solid rgba(255, 215, 0, 0.25);
@@ -587,13 +625,13 @@ input:checked + .slider:before {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 24px 28px;
+    padding: 16px 20px;
     border-bottom: 2px solid rgba(255, 215, 0, 0.15);
 }
 
 .modal-header h2 {
     color: var(--primary-gold);
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     font-weight: 700;
 }
 
@@ -601,10 +639,10 @@ input:checked + .slider:before {
     background: none;
     border: none;
     color: var(--text-secondary);
-    font-size: 2rem;
+    font-size: 1.8rem;
     cursor: pointer;
     transition: color var(--transition-fast), background var(--transition-fast);
-    width: 36px; height: 36px;
+    width: 32px; height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -616,10 +654,10 @@ input:checked + .slider:before {
     background: rgba(255, 0, 110, 0.1);
 }
 
-.modal-body { padding: 20px 28px 28px; }
+.modal-body { padding: 16px 20px 20px; }
 
 .setting-item {
-    padding: 16px;
+    padding: 10px 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     transition: background var(--transition-fast);
     border-radius: var(--radius-sm);
@@ -631,15 +669,15 @@ input:checked + .slider:before {
 .setting-item label {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 0.9rem;
     color: var(--text-primary);
     font-weight: 500;
 }
 
 .setting-item input[type="checkbox"] {
-    width: 20px; height: 20px;
+    width: 18px; height: 18px;
     cursor: pointer;
     accent-color: var(--primary-gold);
 }
@@ -659,21 +697,21 @@ input:checked + .slider:before {
 ::-webkit-scrollbar-thumb:hover { background: var(--primary-gold); }
 
 @media (max-width: 768px) {
-    header { flex-direction: column; text-align: center; padding: 24px; }
-    header h1 { font-size: 1.6rem; }
+    header { flex-direction: column; text-align: center; padding: 16px; }
+    header h1 { font-size: 1.4rem; }
     .header-actions { width: 100%; justify-content: center; }
-    .dashboard { grid-template-columns: 1fr; gap: 20px; }
-    .widget { padding: 20px; }
-    .login-card { padding: 32px 24px; }
-    .gauge-circle { width: 140px; height: 140px; }
-    .gauge-text span { font-size: 1.8rem; }
+    .dashboard { grid-template-columns: 1fr; gap: 12px; }
+    .widget { padding: 14px; }
+    .login-card { padding: 24px 20px; }
+    .gauge-circle { width: 120px; height: 120px; }
+    .gauge-text span { font-size: 1.6rem; }
 }
 
 @media (max-width: 480px) {
-    .container { padding: 16px; }
-    .widget { padding: 16px; }
-    .widget-title { font-size: 1rem; }
-    .widget-value { font-size: 1.2rem; }
+    .container { padding: 12px; }
+    .widget { padding: 12px; }
+    .widget-title { font-size: 0.9rem; }
+    .widget-value { font-size: 1.1rem; }
 }
 
 .hidden { display: none !important; }
@@ -687,7 +725,7 @@ input:checked + .slider:before {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(10, 22, 40, 0.95); /* Navy gelap solid, ringan untuk GPU */
+    background-color: rgba(10, 22, 40, 0.95);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -698,17 +736,17 @@ input:checked + .slider:before {
 
 .loading-overlay.hidden {
     opacity: 0;
-    pointer-events: none; /* Agar tidak bisa diklik saat tersembunyi */
+    pointer-events: none;
 }
 
 .spinner {
-    width: 48px;
-    height: 48px;
-    border: 4px solid rgba(255, 215, 0, 0.2); /* Gold transparan */
-    border-top-color: var(--primary-gold); /* Gold solid */
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 215, 0, 0.2);
+    border-top-color: var(--primary-gold);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
 @keyframes spin {
@@ -717,7 +755,7 @@ input:checked + .slider:before {
 
 .loading-overlay p {
     color: var(--text-primary);
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 500;
     letter-spacing: 0.5px;
     animation: pulse-text 1.5s ease-in-out infinite;
@@ -729,13 +767,13 @@ input:checked + .slider:before {
 }
 
 /* ==========================================
-   SETTINGS FULL PAGE LAYOUT
+   SETTINGS FULL PAGE LAYOUT (Compact)
    ========================================== */
 .settings-page {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background-color: var(--bg-primary, #0f172a); /* Sesuaikan dengan warna background dashboardmu */
+    background-color: var(--bg-primary, #0f172a);
     color: var(--text-primary, #f8fafc);
 }
 
@@ -744,7 +782,7 @@ input:checked + .slider:before {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 24px;
+    padding: 12px 20px;
     background: rgba(0, 0, 0, 0.2);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     position: sticky;
@@ -753,7 +791,7 @@ input:checked + .slider:before {
 }
 
 .settings-header h1 {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     margin: 0;
     font-weight: 600;
 }
@@ -764,11 +802,11 @@ input:checked + .slider:before {
     color: var(--text-primary, #f8fafc);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     cursor: pointer;
-    font-size: 1rem;
-    padding: 8px;
-    border-radius: 8px;
+    font-size: 0.9rem;
+    padding: 6px;
+    border-radius: 6px;
     transition: background 0.2s;
 }
 
@@ -777,13 +815,13 @@ input:checked + .slider:before {
 }
 
 .spacer {
-    width: 100px; /* Menyeimbangkan flexbox agar judul benar-benar di tengah */
+    width: 80px;
 }
 
-/* Konten Utama (Scrollable) */
+/* Konten Utama */
 .settings-content {
     flex: 1;
-    padding: 24px;
+    padding: 16px 20px;
     max-width: 1000px;
     margin: 0 auto;
     width: 100%;
@@ -795,35 +833,35 @@ input:checked + .slider:before {
 .widget-group {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 24px;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
 }
 
 .widget-group h3 {
     margin-top: 0;
-    margin-bottom: 20px;
-    font-size: 1.1rem;
-    color: var(--primary-gold, #fbbf24); /* Sesuaikan warna aksen */
+    margin-bottom: 12px;
+    font-size: 1rem;
+    color: var(--primary-gold, #fbbf24);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    padding-bottom: 12px;
+    padding-bottom: 8px;
 }
 
 /* Grid Checkbox */
 .widget-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
 }
 
 /* Checkbox Label */
 .checkbox-label {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     cursor: pointer;
-    padding: 12px;
-    border-radius: 8px;
+    padding: 8px 10px;
+    border-radius: 6px;
     background: rgba(0, 0, 0, 0.2);
     transition: all 0.2s;
     border: 1px solid transparent;
@@ -835,25 +873,25 @@ input:checked + .slider:before {
 }
 
 .checkbox-label input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     accent-color: var(--primary-gold, #fbbf24);
     cursor: pointer;
 }
 
 .checkbox-label span {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
 }
 
 .key-hint {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     opacity: 0.5;
     font-weight: normal;
 }
 
 /* Footer Sticky */
 .settings-footer {
-    padding: 16px 24px;
+    padding: 12px 20px;
     background: rgba(0, 0, 0, 0.3);
     border-top: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
@@ -867,10 +905,10 @@ input:checked + .slider:before {
     background: var(--primary-gold, #fbbf24);
     color: #000;
     border: none;
-    padding: 12px 32px;
-    border-radius: 8px;
+    padding: 10px 24px;
+    border-radius: 6px;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 0.9rem;
     cursor: pointer;
     transition: opacity 0.2s;
 }
@@ -882,18 +920,42 @@ input:checked + .slider:before {
 /* Status States */
 .loading-state, .empty-state, .error-state {
     text-align: center;
-    padding: 40px;
+    padding: 24px;
     opacity: 0.7;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
 }
 .error-state { color: #ef4444; }
 
 /* Mobile Responsive */
 @media (max-width: 600px) {
     .widget-grid {
-        grid-template-columns: 1fr; /* 1 kolom di HP */
+        grid-template-columns: 1fr;
     }
     .settings-header h1 {
-        font-size: 1rem;
+        font-size: 0.95rem;
+    }
+}
+
+/* Form Row untuk layout side-by-side */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.form-row .form-group {
+    margin-bottom: 0; /* Reset margin karena sudah ada gap */
+}
+
+/* Responsive: jadi vertikal di mobile */
+@media (max-width: 600px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+    
+    .form-row .form-group {
+        margin-bottom: 16px;
     }
 }
