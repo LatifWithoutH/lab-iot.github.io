@@ -86,7 +86,6 @@ void loop() {
   }
 }
 `,
-    "modul05LCD": `
 // ============================================
 // MODUL 05 BAGIAN 1 - LCD 16x2 I2C
 // ============================================
@@ -126,7 +125,8 @@ void setup() {
   Serial.println(WiFi.localIP());
   Serial.println();
 
-  Serial.printf("Firebase Client v%s\\n\\n", FIREBASE_CLIENT_VERSION);
+  // Perbaikan: Menghapus backslash ganda pada \n
+  Serial.printf("Firebase Client v%s\n\n", FIREBASE_CLIENT_VERSION);
   Firebase.begin(DATABASE_URL, API_KEY);
   Firebase.reconnectWiFi(true);
 
@@ -138,14 +138,24 @@ void loop() {
   lcd.setCursor(0, 0);
   lcd.print("Menampilkan Teks");
 
-  if (Firebase.getString(fbdo, "/" + user + "/switch1")) {
+  // Perbaikan: Menggunakan getBool() jika data di Firebase berupa true/false
+  if (Firebase.getBool(fbdo, "/" + user + "/switch1")) {
     lcd.setCursor(0, 1);
-    if (fbdo.to<bool>() == true) {
+    // Perbaikan: Menggunakan boolData()
+    if (fbdo.boolData() == true) {
       lcd.print("Data Sakelar ON ");
     } else {
       lcd.print("Data Sakelar OFF");
     }
+  } else {
+    // Tampilkan alasan error di Serial Monitor jika gagal baca
+    lcd.setCursor(0, 1);
+    lcd.print("Gagal baca data ");
+    Serial.println(fbdo.errorReason());
   }
+  
+  // Perbaikan Fatal: Wajib ada delay agar tidak spam request ke Firebase!
+  delay(1000); 
 }
 `,
     "modul05OLED": `
