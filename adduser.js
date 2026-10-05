@@ -9,6 +9,8 @@ const defaultDataStructure = {
     indicator1: "--",
     indicator2: "--",
     indicator3: "--",
+    display1: "", // <--- TAMBAHKAN INI (Default teks kosong)
+    display2: "", // <--- TAMBAHKAN INI (Default teks kosong)
     switch1: false,
     switch2: false,
     switch3: false,
