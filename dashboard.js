@@ -8,16 +8,16 @@ const userId = localStorage.getItem('iot_user_id');
 if (!dbUrl || !dbSecret || !userId) {
     window.location.href = 'login.html';
 }
+
 // ==========================================
 // HELPER: CEK VISIBILITAS WIDGET
 // ==========================================
 function isWidgetVisible(key) {
     const savedSettings = JSON.parse(localStorage.getItem('iot_widget_visibility')) || {};
-    // Jika tidak ada di settings, tampilkan secara default
     return savedSettings.hasOwnProperty(key) ? savedSettings[key] : true;
 }
 
-// Tampilkan User ID di Header (Tanpa Emot)
+// Tampilkan User ID di Header
 const userDisplay = document.getElementById('user-display');
 if (userDisplay) {
     userDisplay.textContent = `Pengguna: ${userId}`;
@@ -27,18 +27,14 @@ const container = document.getElementById('dynamic-dashboard');
 let pollingInterval = null;
 
 // ==========================================
-// HELPER: Mapping key ke label teks yang rapi (Tanpa Emot)
+// HELPER: Mapping key ke label teks yang rapi
 // ==========================================
 function getHumanLabel(key) {
-    // Murni format string: ganti underscore dengan spasi, lalu kapitalisasi huruf pertama setiap kata
-    // Contoh: "suhu_kamar" -> "Suhu Kamar"
-    // Contoh: "gauge1" -> "Gauge1"
-    // Contoh: "sensor_cahaya_baru" -> "Sensor Cahaya Baru"
     return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 }
 
 // ==========================================
-// 2. FUNGSI KIRIM DATA (SAKELAR)
+// 2. FUNGSI KIRIM DATA
 // ==========================================
 function sendData(key, value) {
     const cleanUrl = dbUrl.replace(/\/+$/, "");
@@ -65,28 +61,20 @@ async function fetchAndRenderDashboard() {
         const data = await response.json();
         if (!data) return;
 
-        // Hapus pesan loading jika ada
         const loadingMsg = container.querySelector('.loading-text');
         if (loadingMsg) loadingMsg.remove();
 
-        // LOOPING SEMUA DATA DI FIREBASE
-        // Di dalam fungsi fetchAndRenderDashboard, tepat setelah loop Object.keys(data).forEach(...)
         Object.keys(data).forEach(key => {
-            // CEK VISIBILITAS DI SINI
             if (!isWidgetVisible(key)) {
-                // Jika widget tidak boleh tampil, hapus dari DOM jika ada
                 const existingWidget = document.getElementById(`widget-${key}`);
                 if (existingWidget) existingWidget.remove();
-                return; // Skip proses rendering
+                return; 
             }
         
             const value = data[key];
             const type = typeof value;
-            
-            // Cek apakah widget sudah ada di layar
             let widgetEl = document.getElementById(`widget-${key}`);
 
-            // Jika BELUM ADA, buat widget baru berdasarkan TIPE DATA
             if (!widgetEl) {
                 let html = '';
                 
@@ -101,7 +89,11 @@ async function fetchAndRenderDashboard() {
                     }
                 } 
                 else if (type === 'string') {
-                    html = createIndicatorWidget(key, value);
+                    if (key.startsWith('display')) {
+                        html = createDisplayWidget(key, value);
+                    } else {
+                        html = createIndicatorWidget(key, value);
+                    }
                 }
 
                 if (html) {
@@ -110,13 +102,9 @@ async function fetchAndRenderDashboard() {
                 }
             }
 
-            // UPDATE NILAI (Anti-Flicker: hanya update isi, bukan recreate)
             if (widgetEl) {
                 updateWidgetValue(widgetEl, key, value, type);
             }
-		
-
-
         });
 
     } catch (error) {
@@ -125,7 +113,7 @@ async function fetchAndRenderDashboard() {
 }
 
 // ==========================================
-// 4. PABRIK WIDGET (TEMPLATE HTML - TANPA EMOT)
+// 4. PABRIK WIDGET (TEMPLATE HTML)
 // ==========================================
 function createGaugeWidget(key, value) {
     const numValue = typeof value === 'number' ? value : 0;
@@ -189,6 +177,27 @@ function createIndicatorWidget(key, value) {
     </div>`;
 }
 
+// FUNGSI DISPLAY WIDGET (AUTO-SEND, TANPA TOMBOL)
+function createDisplayWidget(key, value) {
+    const label = getHumanLabel(key);
+    const safeValue = value || "";
+    return `
+    <div class="widget display-widget" id="widget-${key}">
+        <div class="widget-header">
+            <span class="widget-title">${label}</span>
+            <span class="display-status" id="status-${key}"></span>
+        </div>
+        <div class="display-content">
+            <input type="text" 
+                   class="display-input" 
+                   id="input-${key}" 
+                   value="${safeValue}" 
+                   placeholder="Ketik pesan..." 
+                   data-key="${key}">
+        </div>
+    </div>`;
+}
+
 function createSwitchWidget(key, value) {
     const isChecked = (value === true || value === "true") ? 'checked' : '';
     const label = getHumanLabel(key);
@@ -237,8 +246,16 @@ function updateWidgetValue(widgetEl, key, value, type) {
         }
     } 
     else if (type === 'string') {
-        const text = widgetEl.querySelector('.indicator-text');
-        if (text) text.textContent = value;
+        if (key.startsWith('display')) {
+            const input = widgetEl.querySelector('.display-input');
+            // PENTING: Jangan update value jika user sedang mengetik (fokus) di input tersebut
+            if (input && document.activeElement !== input) {
+                input.value = value;
+            }
+        } else {
+            const text = widgetEl.querySelector('.indicator-text');
+            if (text) text.textContent = value;
+        }
     } 
     else if (type === 'boolean') {
         const toggle = widgetEl.querySelector('input[type="checkbox"]');
@@ -252,8 +269,10 @@ function updateWidgetValue(widgetEl, key, value, type) {
 }
 
 // ==========================================
-// 6. EVENT DELEGATION (Sakelar)
+// 6. EVENT DELEGATION
 // ==========================================
+
+// 6a. Sakelar
 container.addEventListener('change', (e) => {
     if (e.target.matches('input[type="checkbox"]')) {
         const key = e.target.id.replace('toggle-', '');
@@ -261,11 +280,56 @@ container.addEventListener('change', (e) => {
     }
 });
 
+// 6b. Display Input (Auto-send dengan Debounce)
+container.addEventListener('input', (e) => {
+    if (e.target.matches('.display-input')) {
+        const key = e.target.getAttribute('data-key');
+        const value = e.target.value;
+        
+        // Clear timeout sebelumnya
+        if (window.displayTimeouts && window.displayTimeouts[key]) {
+            clearTimeout(window.displayTimeouts[key]);
+        }
+        
+        // Set timeout baru (kirim setelah 800ms tidak ada ketikan)
+        if (!window.displayTimeouts) window.displayTimeouts = {};
+        window.displayTimeouts[key] = setTimeout(() => {
+            sendData(key, value);
+            showSendStatus(key, 'sent');
+        }, 800);
+    }
+});
+
+// 6c. Display Input (Kirim langsung saat tekan Enter)
+container.addEventListener('keypress', (e) => {
+    if (e.target.matches('.display-input') && e.key === 'Enter') {
+        e.preventDefault();
+        const key = e.target.getAttribute('data-key');
+        const value = e.target.value;
+        sendData(key, value);
+        showSendStatus(key, 'sent');
+        e.target.blur(); // Hilangkan fokus keyboard setelah enter
+    }
+});
+
+// 6d. Fungsi Visual Feedback (Centang Hijau)
+function showSendStatus(key, status) {
+    const statusEl = document.getElementById(`status-${key}`);
+    if (!statusEl) return;
+    
+    if (status === 'sent') {
+        statusEl.innerHTML = '✓';
+        statusEl.style.color = '#28a745'; // Warna hijau sukses
+        setTimeout(() => {
+            statusEl.innerHTML = '';
+        }, 1500);
+    }
+}
+
 // ==========================================
 // 7. LOGOUT
 // ==========================================
 function logout() {
-    console.log("Logout diklik!");
     localStorage.removeItem('iot_db_url');
     localStorage.removeItem('iot_db_secret');
     localStorage.removeItem('iot_user_id');
@@ -282,18 +346,15 @@ if (logoutBtn) {
 // 8. JALANKAN SAAT HALAMAN DIMUAT
 // ==========================================
 console.log("Dashboard diinisialisasi untuk pengguna:", userId);
-fetchAndRenderDashboard(); // Panggil sekali di awal
-
-// Polling setiap 3 detik
+fetchAndRenderDashboard();
 pollingInterval = setInterval(fetchAndRenderDashboard, 3000);
 
 // ==========================================
-// FUNGSI DOWNLOAD KODE ARDUINO OTOMATIS
+// 9. FUNGSI DOWNLOAD KODE ARDUINO OTOMATIS
 // ==========================================
 function downloadArduinoCode() {
     const moduleKey = document.getElementById('moduleSelect').value;
     
-    // 1. Validasi
     if (!moduleKey) {
         alert('⚠️ Silakan pilih modul terlebih dahulu!');
         return;
@@ -303,51 +364,46 @@ function downloadArduinoCode() {
         return;
     }
 
-    // 2. Ambil data user dari LocalStorage
     const wifiSsid = localStorage.getItem('iot_wifi_ssid') || 'UMS Wifi';
     const wifiPass = localStorage.getItem('iot_wifi_pass') || 'ums.wifi';
-    const dbUrl = localStorage.getItem('iot_db_url');
-    const dbSecret = localStorage.getItem('iot_db_secret');
-    const userId = localStorage.getItem('iot_user_id');
+    const currentDbUrl = localStorage.getItem('iot_db_url');
+    const currentDbSecret = localStorage.getItem('iot_db_secret');
+    const currentUserId = localStorage.getItem('iot_user_id');
 
-    // 3. Racik Kode (Replace Placeholder)
     let finalCode = ARDUINO_TEMPLATES[moduleKey];
     finalCode = finalCode.replaceAll('{{WIFI_SSID}}', wifiSsid);
     finalCode = finalCode.replaceAll('{{WIFI_PASSWORD}}', wifiPass);
-    finalCode = finalCode.replaceAll('{{DATABASE_URL}}', dbUrl);
-    finalCode = finalCode.replaceAll('{{API_KEY}}', dbSecret);
-    finalCode = finalCode.replaceAll('{{USER_ID}}', userId);
+    finalCode = finalCode.replaceAll('{{DATABASE_URL}}', currentDbUrl);
+    finalCode = finalCode.replaceAll('{{API_KEY}}', currentDbSecret);
+    finalCode = finalCode.replaceAll('{{USER_ID}}', currentUserId);
 
-    // 4. Buat File Blob dan Trigger Download
     const blob = new Blob([finalCode], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     
-    // Nama file otomatis: modul04_latif_2023-10-25.ino
     const date = new Date().toISOString().slice(0, 10);
     a.href = url;
-    a.download = `${moduleKey}_${userId}_${date}.ino`;
+    a.download = `${moduleKey}_${currentUserId}_${date}.ino`;
     
     document.body.appendChild(a);
-    a.click(); // Eksekusi download
+    a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(url); // Bersihkan memori
+    URL.revokeObjectURL(url);
     
     console.log(`✅ Kode ${moduleKey} berhasil diracik dan diunduh!`);
 }
+
 // ==========================================
-// FUNGSI AUTO-POPULATE DROPDOWN MODUL
+// 10. FUNGSI AUTO-POPULATE DROPDOWN MODUL
 // ==========================================
 function populateModuleDropdown() {
     const select = document.getElementById('moduleSelect');
     if (!select || typeof ARDUINO_TEMPLATES === 'undefined') return;
     
-    // Hapus semua opsi kecuali yang pertama (default)
     while (select.options.length > 1) {
         select.remove(1);
     }
     
-    // Mapping label yang rapi untuk setiap key modul
     const moduleLabels = {
         "modul04": "Modul 04 - LED, Buzzer, Relay",
         "modul05LCD": "Modul 05 - LCD 16x2 I2C",
@@ -368,42 +424,35 @@ function populateModuleDropdown() {
         "modul14": "Modul 14 - Sensor Gesture APDS9960"
     };
     
-    // Loop semua keys di ARDUINO_TEMPLATES dan buat option
     Object.keys(ARDUINO_TEMPLATES).forEach(key => {
         const option = document.createElement('option');
         option.value = key;
-        // Pakai label dari mapping, kalau tidak ada pakai key-nya langsung
         option.textContent = moduleLabels[key] || key;
         select.appendChild(option);
     });
-    
-    console.log(`✅ Dropdown modul terisi: ${Object.keys(ARDUINO_TEMPLATES).length} modul tersedia`);
 }
 
-// Panggil fungsi ini saat halaman dimuat
-// Tambahkan di bagian paling bawah dashboard.js, setelah pollingInterval:
 populateModuleDropdown();
 
 // ==========================================
-// FUNGSI DOWNLOAD SEMUA MODUL (.ZIP)
+// 11. FUNGSI DOWNLOAD SEMUA MODUL (.ZIP)
 // ==========================================
 async function downloadAllModules() {
     const statusEl = document.getElementById('download-status');
-    statusEl.style.display = 'block';
-    statusEl.textContent = '⏳ Sedang meracik file ZIP... Mohon tunggu.';
+    if (statusEl) {
+        statusEl.style.display = 'block';
+        statusEl.textContent = '⏳ Sedang meracik file ZIP... Mohon tunggu.';
+    }
 
     try {
-        // 1. Ambil data user dari LocalStorage
         const wifiSsid = localStorage.getItem('iot_wifi_ssid') || 'UMS Wifi';
         const wifiPass = localStorage.getItem('iot_wifi_pass') || 'ums.wifi';
-        const dbUrl = localStorage.getItem('iot_db_url');
-        const dbSecret = localStorage.getItem('iot_db_secret');
-        const userId = localStorage.getItem('iot_user_id');
+        const currentDbUrl = localStorage.getItem('iot_db_url');
+        const currentDbSecret = localStorage.getItem('iot_db_secret');
+        const currentUserId = localStorage.getItem('iot_user_id');
 
-        // 2. Inisialisasi JSZip
         const zip = new JSZip();
 
-        // 3. Mapping struktur folder agar sesuai dengan file 'semua_modul.txt' kamu
         const folderStructure = {
             "modul04": "modul04/modul04.ino",
             "modul05LCD": "modul05/modul05LCD.ino",
@@ -424,35 +473,32 @@ async function downloadAllModules() {
             "modul14": "modul14/modul14.ino"
         };
 
-        // 4. Loop semua template, replace variabel, dan masukkan ke ZIP
         for (const [key, template] of Object.entries(ARDUINO_TEMPLATES)) {
             let finalCode = template
                 .replaceAll('{{WIFI_SSID}}', wifiSsid)
                 .replaceAll('{{WIFI_PASSWORD}}', wifiPass)
-                .replaceAll('{{DATABASE_URL}}', dbUrl)
-                .replaceAll('{{API_KEY}}', dbSecret)
-                .replaceAll('{{USER_ID}}', userId);
+                .replaceAll('{{DATABASE_URL}}', currentDbUrl)
+                .replaceAll('{{API_KEY}}', currentDbSecret)
+                .replaceAll('{{USER_ID}}', currentUserId);
 
-            // Tentukan nama file & folder. Jika tidak ada di mapping, pakai default
             const filePath = folderStructure[key] || `${key}/${key}.ino`;
-            
-            // Tambahkan file ke dalam objek ZIP
             zip.file(filePath, finalCode);
         }
 
-        // 5. Generate file ZIP secara asynchronous
         const content = await zip.generateAsync({ type: "blob" });
-        
-        // 6. Trigger download menggunakan FileSaver.js
         const date = new Date().toISOString().slice(0, 10);
-        saveAs(content, `Kode_Arduino_Lengkap_${userId}_${date}.zip`);
+        saveAs(content, `Kode_Arduino_Lengkap_${currentUserId}_${date}.zip`);
 
-        statusEl.textContent = '✅ Berhasil! File ZIP telah diunduh.';
-        setTimeout(() => { statusEl.style.display = 'none'; }, 3000);
+        if (statusEl) {
+            statusEl.textContent = '✅ Berhasil! File ZIP telah diunduh.';
+            setTimeout(() => { statusEl.style.display = 'none'; }, 3000);
+        }
 
     } catch (error) {
         console.error("Gagal membuat ZIP:", error);
-        statusEl.textContent = '❌ Gagal membuat file ZIP. Cek console untuk detail.';
-        statusEl.style.color = 'var(--danger)';
+        if (statusEl) {
+            statusEl.textContent = '❌ Gagal membuat file ZIP. Cek console untuk detail.';
+            statusEl.style.color = 'var(--danger, red)';
+        }
     }
 }

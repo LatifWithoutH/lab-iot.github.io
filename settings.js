@@ -6,32 +6,33 @@ const dbSecret = localStorage.getItem('iot_db_secret');
 const userId = localStorage.getItem('iot_user_id');
 
 if (!dbUrl || !dbSecret || !userId) {
-    window.location.href = 'index.html'; // Atau 'login.html' jika belum di-rename
+    window.location.href = 'index.html'; // Atau 'login.html'
 }
 
 const container = document.getElementById('dynamic-settings-container');
 const backBtn = document.getElementById('backBtn');
 const saveBtn = document.getElementById('saveBtn');
 const STORAGE_KEY = 'iot_widget_visibility';
+
 // ==========================================
-// 2. HELPER: FORMAT LABEL MURNI DINAMIS (TANPA MAPPING)
+// 2. HELPER: FORMAT LABEL MURNI DINAMIS
 // ==========================================
 function getHumanLabel(key) {
-    // Murni format string: ganti underscore dengan spasi, lalu kapitalisasi huruf pertama setiap kata
-    // Contoh: "suhu_kamar" -> "Suhu Kamar"
-    // Contoh: "gauge1" -> "Gauge1"
-    // Contoh: "sensor_cahaya_baru" -> "Sensor Cahaya Baru"
     return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 }
 
 function getWidgetType(key, value) {
     if (typeof value === 'boolean') return 'switch';
-    if (typeof value === 'string') return 'indicator';
+    if (typeof value === 'string') {
+        if (key.startsWith('display')) return 'display'; // <-- Bedakan display
+        return 'indicator';
+    }
     if (typeof value === 'number') {
         return key.toLowerCase().includes('hlevel') ? 'hlevel' : 'gauge';
     }
     return 'unknown';
 }
+
 // ==========================================
 // 3. FUNGSI UTAMA: AMBIL DATA DARI FIREBASE & RENDER
 // ==========================================
@@ -49,8 +50,8 @@ async function loadDynamicSettings() {
             return;
         }
 
-        // Kelompokkan widget berdasarkan tipe
-        const groups = { gauge: [], hlevel: [], indicator: [], switch: [] };
+        // 1. TAMBAHKAN 'display' DI SINI
+        const groups = { gauge: [], hlevel: [], indicator: [], switch: [], display: [] };
         
         for (const [key, value] of Object.entries(data)) {
             const type = getWidgetType(key, value);
@@ -59,16 +60,18 @@ async function loadDynamicSettings() {
             }
         }
 
-        // Render HTML (Hapus loading state)
         container.innerHTML = ''; 
         
-        // Urutan render kelompok
-        const order = ['gauge', 'hlevel', 'indicator', 'switch'];
+        // 2. TAMBAHKAN 'display' DI ARRAY ORDER
+        const order = ['gauge', 'hlevel', 'indicator', 'switch', 'display'];
+        
+        // 3. PERBAIKAN: TAMBAH TANDA KOMA (,) SETELAH 'Sakelar (Kontrol)'
         const titles = { 
             gauge: 'Gauge (Data Angka)', 
             hlevel: 'Horizontal Level', 
-            indicator: 'Indikator (Teks)', 
-            switch: 'Sakelar (Kontrol)' 
+            indicator: 'Indikator (Teks dari Alat)', 
+            switch: 'Sakelar (Kontrol)', // <-- INI YANG KURANG KOMA SEBELUMNYA!
+            display: 'Display (Kirim Teks ke Alat)' 
         };
 
         order.forEach(type => {
@@ -78,7 +81,6 @@ async function loadDynamicSettings() {
             }
         });
 
-        // Terapkan preferensi visibilitas yang sudah tersimpan sebelumnya
         applySavedPreferences();
 
     } catch (error) {
@@ -87,7 +89,7 @@ async function loadDynamicSettings() {
 }
 
 // ==========================================
-// 4. PEMBUAT HTML (TANPA KURUNG KECIL)
+// 4. PEMBUAT HTML
 // ==========================================
 function createGroupHtml(type, title, keys) {
     let itemsHtml = keys.map(key => {
@@ -112,7 +114,6 @@ function applySavedPreferences() {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
     document.querySelectorAll('.widget-checkbox').forEach(cb => {
         const key = cb.getAttribute('data-widget');
-        // Default: tampilkan (checked = true) jika belum pernah diatur
         cb.checked = saved.hasOwnProperty(key) ? saved[key] : true; 
     });
 }
@@ -126,10 +127,8 @@ saveBtn.addEventListener('click', () => {
         settings[cb.getAttribute('data-widget')] = cb.checked;
     });
     
-    // Simpan ke LocalStorage
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
     
-    // Feedback visual
     const originalText = saveBtn.textContent;
     saveBtn.textContent = 'Tersimpan!';
     
