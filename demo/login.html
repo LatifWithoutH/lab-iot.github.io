@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - IoT Dashboard</title>
-    <link rel="stylesheet" href="..\style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="login-container">
@@ -13,16 +13,16 @@
             <p class="subtitle">Sistem Monitoring Real-time</p>
             
             <form id="login-form">
-                <!-- URL Database (DIKUNCI / READONLY) -->
+                <!-- URL Database (Tetap text karena bukan rahasia, tapi readonly) -->
                 <div class="form-group">
                     <label for="db-url">URL Database Firebase</label>
                     <input type="text" id="db-url" value="https://belajar-iot-dd733-default-rtdb.firebaseio.com" readonly required style="background: rgba(255, 255, 255, 0.1); cursor: not-allowed;">
                 </div>
                 
-                <!-- Token / Secret (DIKUNCI / READONLY) -->
+                <!-- Token / Secret (DISEMBUNYIKAN dengan type="password") -->
                 <div class="form-group">
                     <label for="db-secret">Token / Database Secret</label>
-                    <input type="text" id="db-secret" value="w2biuKjj4lzr0yOZww36FEJTQMgbuwsgzVqb9coG" readonly required style="background: rgba(255, 255, 255, 0.1); cursor: not-allowed;">
+                    <input type="password" id="db-secret" value="w2biuKjj4lzr0yOZww36FEJTQMgbuwsgzVqb9coG" readonly required style="background: rgba(255, 255, 255, 0.1); cursor: not-allowed;">
                 </div>
                 
                 <!-- User ID (WAJIB DIISI SISWA) -->
@@ -31,7 +31,7 @@
                     <input type="text" id="user-id" placeholder="Contoh: latif, kelompok1, dll" required>
                 </div>
 
-                <!-- WiFi Credentials - Side by Side (Sudah terisi default) -->
+                <!-- WiFi Credentials - Side by Side -->
                 <div class="form-row">
                     <div class="form-group">
                         <label for="wifiSsid">📶 Nama WiFi (SSID)</label>
@@ -39,7 +39,8 @@
                     </div>
                     <div class="form-group">
                         <label for="wifiPass">🔒 Password WiFi</label>
-                        <input type="text" id="wifiPass" value="ums.wifi" required>
+                        <!-- DISEMBUNYIKAN dengan type="password" -->
+                        <input type="password" id="wifiPass" value="ums.wifi" required>
                     </div>
                 </div>
                 
