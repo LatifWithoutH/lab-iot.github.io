@@ -5,58 +5,107 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - IoT Monitoring</title>
     <link rel="stylesheet" href="style.css">
-	<!-- Library untuk membuat file ZIP di browser -->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-	<!-- Library untuk memicu download file -->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
+    
+    <!-- Library untuk membuat file ZIP di browser -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- Library untuk memicu download file -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </head>
 <body>
     <div class="container">
+
         <!-- HEADER -->
         <header>
             <div class="header-info">
                 <h1>IoT Dashboard</h1>
                 <p class="subtitle">Sistem Monitoring Real-time</p>
-                <p class="user-info" id="user-display"></p>
+                <p class="user-info" id="user-display">Memuat pengguna...</p>
             </div>
-			<!-- Ganti bagian header-actions di dashboard.html -->
+            
             <div class="header-actions">
                 <a href="settings.html" class="settings-btn">Pengaturan</a>
+                
+                <!-- TOMBOL DEV MODE: Menuju ke folder dev/index.html -->
+                <a href="dev/index.html" class="dev-btn" title="Mode Pengembangan / Eksperimen">
+                    🧪 Dev Mode
+                </a>
+                
                 <button id="logoutBtn" class="logout-btn">Keluar</button>
             </div>
         </header>
 
-		<div class="download-section" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-bottom: 24px; border: 1px solid rgba(255,215,0,0.2);">
-		  <h3 style="color: var(--primary-gold); margin-bottom: 10px; font-size: 1.2rem;"> 📥 Unduh Kode Arduino</h3>
-		  <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.9rem;">Pilih modul spesifik atau unduh semua modul sekaligus dalam format .zip yang sudah disesuaikan dengan akun Anda.</p>
-		  
-		  <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-			<!-- Dropdown untuk unduh satuan -->
-			<select id="moduleSelect" style="padding: 10px; border-radius: 8px; border: 1px solid var(--accent-navy); background: var(--bg-dark); color: var(--text-primary); flex: 1; min-width: 200px;">
-			  <option value="">-- Pilih Modul Satuan --</option>
-			  <!-- Opsi akan diisi otomatis oleh JavaScript -->
-			</select>
-			
-			<button onclick="downloadArduinoCode()" style="padding: 10px 20px; background: linear-gradient(135deg, #FFD700, #FFA500); color: #1e3c72; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
-			  ⬇️ Unduh Satuan
-			</button>
 
-			<!-- TOMBOL BARU: UNDUH SEMUA -->
-			<button onclick="downloadAllModules()" style="padding: 10px 20px; background: linear-gradient(135deg, #28a745, #218838); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;">
-			  📦 Unduh Semua (.zip)
-			</button>
-		  </div>
-		  <p id="download-status" style="margin-top: 10px; font-size: 0.85rem; color: var(--primary-gold); display: none;"></p>
-		</div>
+        <!-- BAGIAN UNDUH KODE ARDUINO DENGAN TAB TOGGLE -->
+        <div id="download-card" class="download-section">
+            
+            <!-- Header Section dengan Tab Toggle di Kanan -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <h3 style="color: var(--eva-green); margin: 0 0 5px 0; font-size: 1.3rem;" id="card-title"> 📥 Unduh Kode Arduino</h3>
+                    <p style="color: var(--text-secondary); margin: 0; font-size: 0.9rem;" id="section-description">Pilih versi Firebase yang sesuai dengan proyek Anda.</p>
+                </div>
+                
+                <!-- Tab Toggle Buttons: v3.x vs v4.x (INI YANG TADI HILANG) -->
+                <div style="display: flex; gap: 5px; background: rgba(0,0,0,0.4); padding: 5px; border-radius: 10px; border: 1px solid var(--nerv-border);">
+                    <button id="tab-v3" onclick="switchVersion('v3')" style="padding: 8px 18px; background: var(--gradient-accent); color: var(--nerv-black); border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem; transition: all 0.3s;">
+                        Firebase v3.x
+                    </button>
+                    <button id="tab-v4" onclick="switchVersion('v4')" style="padding: 8px 18px; background: transparent; color: var(--text-secondary); border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem; transition: all 0.3s;">
+                        Firebase v4.x
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Konten Download dengan Custom Dropdown -->
+            <div id="download-content">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                    
+                    <!-- WRAPPER CUSTOM DROPDOWN -->
+                    <div class="nerv-dropdown-wrapper" style="flex: 1; min-width: 200px;">
+                        <select id="moduleSelect" class="hidden-native-select">
+                            <option value=""></option>
+                        </select>
+                        
+                        <div class="nerv-custom-dropdown" id="customModuleDropdown">
+                            <div class="nerv-dropdown-trigger">
+                                <span class="nerv-dropdown-value">-- Pilih Modul Satuan --</span>
+                                <svg class="nerv-dropdown-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </div>
+                            <div class="nerv-dropdown-options">
+                                <!-- Opsi di-inject via JS -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="downloadArduinoCode()" style="padding: 12px 24px; background: var(--gradient-accent); color: var(--nerv-black); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: transform 0.2s; font-size: 0.95rem;">
+                        ⬇️ Unduh Satuan
+                    </button>
+                    
+                    <button onclick="downloadAllModules()" style="padding: 12px 24px; background: linear-gradient(135deg, #28a745, #218838); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: transform 0.2s; font-size: 0.95rem;">
+                        📦 Unduh Semua (.zip)
+                    </button>
+                </div>
+                <p id="download-status" style="margin-top: 15px; font-size: 0.85rem; color: var(--eva-green); display: none;"></p>
+            </div>
+        </div>
 
+        
 
-        <!-- MAIN DASHBOARD -->
+        <!-- MAIN DASHBOARD: WIDGET AKAN MUNCUL DI SINI SECARA DINAMIS -->
         <main class="dashboard" id="dynamic-dashboard">
-            <p class="loading-text">Memuat data dari server...</p>
+            <p class="loading-text" style="text-align: center; color: var(--text-secondary); padding: 40px;">Memuat data dari server...</p>
         </main>
     </div>
-	<!-- Letakkan di atas script dashboard.js -->
-	<script src="templates.js"></script>
+
+    <!-- SCRIPTS -->
+    <!-- 1. templates.js (Di-generate otomatis oleh jadi.py dari folder ~/Arduino/modul) -->
+    <script src="templates.js"></script>
+    <!-- 2. additionaltemplate.js (File khusus untuk menyimpan template tambahan/custom kamu) -->
+    <script src="template_4x.js"></script>
+    <!-- 3. dashboard.js (Logika utama, pastikan sudah berisi fungsi switchTab yang mengarah ke sumber data berbeda) -->
     <script src="dashboard.js"></script>
 </body>
 </html>
