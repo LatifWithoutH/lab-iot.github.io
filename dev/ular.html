@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Dev Mode - Snake IoT Controller</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Courier New', monospace;
+    background: #0a0a0a;
+    color: #00ff88;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    user-select: none;
+    position: relative;
+  }
+  .back-btn {
+    position: absolute; top: 20px; left: 20px;
+    background: transparent; border: 1px solid #00ff88; color: #00ff88;
+    padding: 8px 16px; border-radius: 8px; cursor: pointer;
+    font-family: 'Courier New', monospace; font-weight: bold;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .back-btn:hover { background: #00ff88; color: #000; box-shadow: 0 0 15px #00ff88; }
+
+  h1 { font-size: 1.5rem; margin-bottom: 10px; text-shadow: 0 0 10px #00ff88; text-align: center; }
+  .user-badge {
+    font-size: 0.8rem; color: #888; margin-bottom: 20px;
+    border: 1px dashed #333; padding: 4px 12px; border-radius: 20px;
+  }
+  .status-bar { display: flex; gap: 20px; margin-bottom: 20px; font-size: 1rem; }
+  .status-bar div {
+    background: #1a1a1a; padding: 10px 20px; border: 2px solid #00ff88;
+    border-radius: 8px; min-width: 120px; text-align: center;
+  }
+  .status-bar span { font-weight: bold; color: #fff; }
+  .game-state.playing { color: #00ff88; }
+  .game-state.over { color: #ff4444; }
+
+  .joystick {
+    display: grid; grid-template-columns: 80px 80px 80px; grid-template-rows: 80px 80px 80px;
+    gap: 10px; margin-top: 20px;
+  }
+  .btn {
+    background: #1a1a1a; border: 2px solid #00ff88; color: #00ff88;
+    font-size: 2rem; font-weight: bold; border-radius: 12px; cursor: pointer;
+    transition: all 0.1s; display: flex; align-items: center; justify-content: center;
+  }
+  .btn:active, .btn.pressed {
+    background: #00ff88; color: #000; transform: scale(0.95); box-shadow: 0 0 20px #00ff88;
+  }
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .btn-up    { grid-column: 2; grid-row: 1; }
+  .btn-left  { grid-column: 1; grid-row: 2; }
+  .btn-right { grid-column: 3; grid-row: 2; }
+  .btn-down  { grid-column: 2; grid-row: 3; }
+
+  .btn-reset {
+    margin-top: 20px; width: 260px; height: 60px; background: #ff4444;
+    border: 2px solid #ff4444; color: #fff; font-size: 1.2rem; font-weight: bold;
+    border-radius: 12px; cursor: pointer; transition: all 0.1s;
+  }
+  .btn-reset:active { background: #fff; color: #ff4444; }
+  .btn-reset:disabled { background: #333; border-color: #333; color: #666; cursor: not-allowed; }
+
+  .connection { margin-top: 15px; font-size: 0.85rem; color: #888; }
+  .connection.ok { color: #00ff88; }
+  .connection.err { color: #ff4444; }
+</style>
+</head>
+<body>
+
+<!-- 🛡️ SATPAM: CEK LOGIN -->
+<script>
+  const dbUrl = localStorage.getItem('iot_db_url');
+  const dbSecret = localStorage.getItem('iot_db_secret');
+  const userId = localStorage.getItem('iot_user_id');
+
+  if (!dbUrl || !dbSecret || !userId) {
+    window.location.href = '../login.html';
+  }
+</script>
+
+<a href="index.html" class="back-btn">← Kembali ke Dev Menu</a>
+
+<h1>🐍 SNAKE IoT <span style="font-size:0.6em; color:#ff9500;">[DEV]</span></h1>
+<div class="user-badge">Pilot: <span id="displayUser">...</span></div>
+
+<div class="status-bar">
+  <div>SCORE: <span id="score">0</span></div>
+  <div>STATE: <span id="gameState" class="game-state playing">...</span></div>
+</div>
+
+<div class="joystick">
+  <button class="btn btn-up" data-dir="UP">▲</button>
+  <button class="btn btn-left" data-dir="LEFT">◀</button>
+  <button class="btn btn-right" data-dir="RIGHT">▶</button>
+  <button class="btn btn-down" data-dir="DOWN">▼</button>
+</div>
+
+<button class="btn-reset" id="btnReset" disabled>🔄 RESET GAME</button>
+<div class="connection" id="connStatus">Menghubungkan ke Firebase...</div>
+
+<script>
+  document.getElementById('displayUser').textContent = userId;
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCv_iEDGgtZbqwfIpEgUASaX1gfJ1uZd-w",
+    authDomain: "belajar-iot-dd733.firebaseapp.com",
+    databaseURL: "https://belajar-iot-dd733-default-rtdb.firebaseio.com",
+    projectId: "belajar-iot-dd733",
+    storageBucket: "belajar-iot-dd733.firebasestorage.app",
+    messagingSenderId: "772514765696",
+    appId: "1:772514765696:web:239faf628cd095c177ff65",
+    measurementId: "G-FREGYYPWQ4"
+  };
+
+  const PATH = `/${userId}/snake`;
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  const refDirection = db.ref(`${PATH}/direction`);
+  const refScore     = db.ref(`${PATH}/score`);
+  const refState     = db.ref(`${PATH}/gameState`);
+
+  const elScore    = document.getElementById('score');
+  const elState    = document.getElementById('gameState');
+  const elConn     = document.getElementById('connStatus');
+  const btnReset   = document.getElementById('btnReset');
+  const dirButtons = document.querySelectorAll('.btn[data-dir]');
+
+  let currentState = "PLAYING";
+
+  refScore.on('value', (snap) => { elScore.textContent = snap.val() ?? 0; });
+
+  refState.on('value', (snap) => {
+    currentState = snap.val() || "PLAYING";
+    elState.textContent = currentState;
+    elState.className = 'game-state ' + (currentState === "GAME_OVER" ? "over" : "playing");
+    const isPlaying = currentState === "PLAYING";
+    dirButtons.forEach(b => b.disabled = !isPlaying);
+    btnReset.disabled = isPlaying;
+  });
+
+  function sendDirection(dir) {
+    if (currentState !== "PLAYING") return;
+    refDirection.set(dir).then(() => {
+      if (navigator.vibrate) navigator.vibrate(30);
+    }).catch(err => console.error("Gagal kirim arah:", err));
+  }
+
+  dirButtons.forEach(btn => {
+    btn.addEventListener('click', () => sendDirection(btn.dataset.dir));
+  });
+
+  btnReset.addEventListener('click', () => refDirection.set("RESET"));
+
+  const keyMap = {
+    'ArrowUp': 'UP', 'w': 'UP', 'W': 'UP',
+    'ArrowDown': 'DOWN', 's': 'DOWN', 'S': 'DOWN',
+    'ArrowLeft': 'LEFT', 'a': 'LEFT', 'A': 'LEFT',
+    'ArrowRight': 'RIGHT', 'd': 'RIGHT', 'D': 'RIGHT',
+    'r': 'RESET', 'R': 'RESET'
+  };
+
+  document.addEventListener('keydown', (e) => {
+    const dir = keyMap[e.key];
+    if (!dir) return;
+    if (dir === 'RESET') {
+      if (currentState === "GAME_OVER") refDirection.set("RESET");
+    } else {
+      sendDirection(dir);
+      const btn = document.querySelector(`.btn[data-dir="${dir}"]`);
+      if (btn) {
+        btn.classList.add('pressed');
+        setTimeout(() => btn.classList.remove('pressed'), 150);
+      }
+    }
+  });
+
+  db.ref('.info/connected').on('value', (snap) => {
+    if (snap.val() === true) {
+      elConn.textContent = "● Terhubung ke Firebase";
+      elConn.className = "connection ok";
+    } else {
+      elConn.textContent = "○ Memutus koneksi...";
+      elConn.className = "connection err";
+    }
+  });
+</script>
+</body>
+</html>
