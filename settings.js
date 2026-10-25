@@ -6,7 +6,7 @@ const dbSecret = localStorage.getItem('iot_db_secret');
 const userId = localStorage.getItem('iot_user_id');
 
 if (!dbUrl || !dbSecret || !userId) {
-    window.location.href = 'index.html'; // Atau 'login.html'
+    window.location.href = 'login.html';
 }
 
 const container = document.getElementById('dynamic-settings-container');
@@ -15,26 +15,28 @@ const saveBtn = document.getElementById('saveBtn');
 const STORAGE_KEY = 'iot_widget_visibility';
 
 // ==========================================
-// 2. HELPER: FORMAT LABEL MURNI DINAMIS
+// 2. HELPER: DETEKSI TIPE WIDGET BERDASARKAN NAMA KEY
 // ==========================================
 function getHumanLabel(key) {
     return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 }
 
-function getWidgetType(key, value) {
-    if (typeof value === 'boolean') return 'switch';
-    if (typeof value === 'string') {
-        if (key.startsWith('display')) return 'display'; // <-- Bedakan display
-        return 'indicator';
-    }
-    if (typeof value === 'number') {
-        return key.toLowerCase().includes('hlevel') ? 'hlevel' : 'gauge';
-    }
-    return 'unknown';
+// PENTING: Gunakan logika deteksi berbasis NAMA KEY, bukan tipe data!
+// Ini harus sinkron dengan fungsi getWidgetTypeByKey() di dashboard.js
+function getWidgetTypeByKey(key) {
+    if (key.startsWith('switch')) return 'switch';
+    if (key.startsWith('display')) return 'display';
+    if (key.startsWith('gauge')) return 'gauge';
+    if (key.startsWith('hlevel') || key.includes('jarak') || key.includes('ketinggian')) return 'hlevel';
+    if (key.startsWith('indicator')) return 'indicator';
+    
+    // FALLBACK BARU: Kembalikan 'additional' untuk data custom/eksperimental
+    // Jangan kembalikan 'indicator' agar data custom punya grup sendiri
+    return 'additional'; 
 }
 
 // ==========================================
-// 3. FUNGSI UTAMA: AMBIL DATA DARI FIREBASE & RENDER
+// 3. FUNGSI UTAMA: AMBIL DATA & RENDER DINAMIS
 // ==========================================
 async function loadDynamicSettings() {
     try {
@@ -46,36 +48,49 @@ async function loadDynamicSettings() {
         
         const data = await response.json();
         if (!data) {
-            container.innerHTML = '<p class="empty-state">Belum ada data widget untuk user ini.</p>';
+            container.innerHTML = '<p class="empty-state">Belum ada data widget. Upload kode Arduino terlebih dahulu.</p>';
             return;
         }
 
-        // 1. TAMBAHKAN 'display' DI SINI
-        const groups = { gauge: [], hlevel: [], indicator: [], switch: [], display: [] };
+        // Grup dinamis - tambahkan 'additional' untuk menampung data custom
+        const groups = { 
+            gauge: [], 
+            hlevel: [], 
+            indicator: [], 
+            switch: [], 
+            display: [],
+            additional: [] 
+        };
         
-        for (const [key, value] of Object.entries(data)) {
-            const type = getWidgetType(key, value);
+        // Loop data dan masukkan ke grup berdasarkan NAMA KEY
+        for (const key of Object.keys(data)) {
+            const type = getWidgetTypeByKey(key);
             if (groups[type]) {
                 groups[type].push(key);
+            } else {
+                // Safety net: jika ada bug deteksi, lempar ke additional
+                groups['additional'].push(key);
             }
         }
 
         container.innerHTML = ''; 
         
-        // 2. TAMBAHKAN 'display' DI ARRAY ORDER
-        const order = ['gauge', 'hlevel', 'indicator', 'switch', 'display'];
+        // Urutan tampilan: Widget standar dulu, Additional di paling bawah
+        const order = ['gauge', 'hlevel', 'indicator', 'switch', 'display', 'additional'];
         
-        // 3. PERBAIKAN: TAMBAH TANDA KOMA (,) SETELAH 'Sakelar (Kontrol)'
+        // Judul grup yang user-friendly
         const titles = { 
             gauge: 'Gauge (Data Angka)', 
             hlevel: 'Horizontal Level', 
             indicator: 'Indikator (Teks dari Alat)', 
-            switch: 'Sakelar (Kontrol)', // <-- INI YANG KURANG KOMA SEBELUMNYA!
-            display: 'Display (Kirim Teks ke Alat)' 
+            switch: 'Sakelar (Kontrol)', 
+            display: 'Display (Kirim Teks ke Alat)',
+            additional: 'Additional / Custom Data' 
         };
 
+        // Render hanya grup yang memiliki item
         order.forEach(type => {
-            if (groups[type].length > 0) {
+            if (groups[type] && groups[type].length > 0) {
                 const groupHtml = createGroupHtml(type, titles[type], groups[type]);
                 container.insertAdjacentHTML('beforeend', groupHtml);
             }
@@ -85,24 +100,29 @@ async function loadDynamicSettings() {
 
     } catch (error) {
         container.innerHTML = `<p class="error-state">Error: ${error.message}</p>`;
+        console.error("Settings Load Error:", error);
     }
 }
 
 // ==========================================
-// 4. PEMBUAT HTML
+// 4. PEMBUAT HTML GRUP (Dengan Styling Khusus Additional)
 // ==========================================
 function createGroupHtml(type, title, keys) {
+    // Tambahkan class khusus jika ini grup additional
+    const groupClass = type === 'additional' ? 'widget-group additional-group' : 'widget-group';
+    
     let itemsHtml = keys.map(key => {
         const label = getHumanLabel(key);
         return `
         <label class="checkbox-label">
             <input type="checkbox" data-widget="${key}" class="widget-checkbox">
             <span>${label}</span>
+            <small class="key-hint">(${key})</small>
         </label>`;
     }).join('');
 
     return `
-    <div class="widget-group">
+    <div class="${groupClass}">
         <h3>${title}</h3>
         <div class="widget-grid">
             ${itemsHtml}
@@ -114,6 +134,7 @@ function applySavedPreferences() {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
     document.querySelectorAll('.widget-checkbox').forEach(cb => {
         const key = cb.getAttribute('data-widget');
+        // Default true jika belum pernah disetting
         cb.checked = saved.hasOwnProperty(key) ? saved[key] : true; 
     });
 }
@@ -130,7 +151,9 @@ saveBtn.addEventListener('click', () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
     
     const originalText = saveBtn.textContent;
-    saveBtn.textContent = 'Tersimpan!';
+    saveBtn.textContent = 'Tersimpan! ✓';
+    saveBtn.style.background = 'var(--eva-green)';
+    saveBtn.style.color = 'var(--nerv-black)';
     
     setTimeout(() => {
         window.location.href = 'dashboard.html';
