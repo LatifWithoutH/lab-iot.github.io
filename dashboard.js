@@ -1,5 +1,5 @@
 // ==========================================
-// 1. SATPAM (GUARD): CEK LOGIN
+// 1. SATPAM (GUARD): CEK LOGIN & KONFIGURASI
 // ==========================================
 const dbUrl = localStorage.getItem('iot_db_url');
 const dbSecret = localStorage.getItem('iot_db_secret');
@@ -16,10 +16,12 @@ if (userDisplay) {
 }
 
 const container = document.getElementById('dynamic-dashboard');
-let pollingInterval = null;
 
-// Map global untuk menyimpan instance widget aktif
+// Map global untuk menyimpan instance widget aktif (Mencegah duplikasi & memudahkan update)
 window.activeWidgets = new Map();
+
+// Variabel global untuk koneksi streaming
+window.firebaseEventSource = null;
 
 // ==========================================
 // 2. HELPER: CEK VISIBILITAS & DETEKSI WIDGET
@@ -43,11 +45,10 @@ function getWidgetTypeByKey(key) {
 }
 
 // ==========================================
-// 3. FUNGSI KIRIM DATA (FIREBASE) - DENGAN PROTEKSI NULL
+// 3. FUNGSI KIRIM DATA (FIREBASE REST API)
 // ==========================================
 /**
- * PERINGATAN KERAS:
- * JANGAN PERNAH mengirim value NULL via sendData() ke Firebase!
+ * PERINGATAN: JANGAN PERNAH mengirim value NULL via sendData() ke Firebase!
  * Firebase Realtime Database akan MENGHAPUS key tersebut secara permanen.
  */
 function sendData(key, value) {
@@ -63,16 +64,27 @@ function sendData(key, value) {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(value)
-    }).catch(err => console.error("Error mengirim data:", err));
+    })
+    .then(response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        console.log(`✅ Data ${key} berhasil dikirim:`, value);
+    })
+    .catch(err => console.error(`❌ Error mengirim data ${key}:`, err));
 }
 
 // Helper untuk lazy loading script widget
 async function loadScript(src) {
     return new Promise((resolve, reject) => {
+        // Cek apakah script sudah ada di DOM
+        if (document.querySelector(`script[src="${src}"]`)) {
+            resolve();
+            return;
+        }
+        
         const script = document.createElement('script');
         script.src = src;
         script.onload = resolve;
-        script.onerror = reject;
+        script.onerror = () => reject(new Error(`Gagal memuat script: ${src}`));
         document.head.appendChild(script);
     });
 }
@@ -97,7 +109,8 @@ const WIDGET_REGISTRY = {
         class: 'SwitchWidget',    
         file: 'widget/switch.js',    
         loaded: false,
-        factory: (key, id) => new window.SwitchWidget(key, id) 
+        // PERBAIKAN: Inject sendData ke SwitchWidget
+        factory: (key, id) => new window.SwitchWidget(key, id, sendData) 
     },
     'indicator': { 
         class: 'IndicatorWidget', 
@@ -111,16 +124,17 @@ const WIDGET_REGISTRY = {
         loaded: false,
         factory: (key, id) => new window.DisplayWidget(key, id, sendData) 
     },
-    'joystick': { 
+    'joystick':  { 
         class: 'JoystickWidget',   
         file: 'widget/joystick.js',   
         loaded: false,
+        // PERBAIKAN: Inject sendData ke JoystickWidget
         factory: (key, id) => new window.JoystickWidget(key, id, sendData) 
     }
 };
 
 // ==========================================
-// 5. RENDER DASHBOARD DINAMIS (DENGAN NULL PROTECTION)
+// 5. RENDER DASHBOARD DINAMIS
 // ==========================================
 async function fetchAndRenderDashboard() {
     try {
@@ -133,22 +147,26 @@ async function fetchAndRenderDashboard() {
         const data = await response.json();
         if (!data) return;
 
+        // Hapus pesan loading jika ada
         const loadingMsg = container.querySelector('.loading-text');
         if (loadingMsg) loadingMsg.remove();
 
         for (const [key, value] of Object.entries(data)) {
-            // SKIP KEY YANG BERVALUE NULL
+            // SKIP KEY YANG BERVALUE NULL (Mencegah error render)
             if (value === null) {
                 console.warn(`⚠️ Key '${key}' bernilai null. Melewati render.`);
                 continue; 
             }
 
+            // Cek visibilitas
             if (!isWidgetVisible(key)) {
                 const existingWidget = document.getElementById(`widget-${key}`);
                 if (existingWidget) {
                     existingWidget.remove();
                     const inst = window.activeWidgets.get(key);
-                    if (inst && typeof inst.destroy === 'function') inst.destroy();
+                    if (inst && typeof inst.destroy === 'function') {
+                        inst.destroy(); // Bersihkan event listener/memory
+                    }
                     window.activeWidgets.delete(key);
                 }
                 continue; 
@@ -171,43 +189,72 @@ async function fetchAndRenderDashboard() {
 
             let widgetEl = document.getElementById(`widget-${key}`);
             
-            // Inisialisasi widget baru JIKA BELUM ADA
+            // Inisialisasi widget baru JIKA BELUM ADA di DOM
             if (!widgetEl && reg && reg.factory && window[reg.class]) {
                 widgetEl = document.createElement('div');
                 widgetEl.id = `widget-${key}`;
                 widgetEl.className = 'widget dynamic-widget';
                 container.appendChild(widgetEl);
                 
-                // Gunakan Factory Pattern
+                // Gunakan Factory Pattern untuk membuat instance
                 const instance = reg.factory(key, `widget-${key}`);
                 window.activeWidgets.set(key, instance);
             }
 
-            // Update nilai via method .update()
+            // Update nilai via method .update() pada instance yang sudah ada
             if (widgetEl && window.activeWidgets.has(key)) {
                 window.activeWidgets.get(key).update(value);
             }
         }
     } catch (error) {
-        console.error("Gagal mengambil data:", error);
+        console.error("Gagal mengambil data dashboard:", error);
     }
 }
 
 // ==========================================
-// 6. LOGOUT & INISIALISASI
+// 6. LOGOUT (Diperbarui untuk menghentikan interval)
 // ==========================================
+let updateInterval = null; // Variabel global untuk menyimpan timer
+
 function logout() {
+    // HENTIKAN polling agar tidak terus berjalan di background setelah logout
+    if (updateInterval) {
+        clearInterval(updateInterval);
+        console.log("⏹️ Realtime update dihentikan.");
+    }
+    
     localStorage.removeItem('iot_db_url');
     localStorage.removeItem('iot_db_secret');
     localStorage.removeItem('iot_user_id');
-    if (pollingInterval) clearInterval(pollingInterval);
+    localStorage.removeItem('iot_widget_visibility');
+    
     window.location.href = 'login.html';
 }
 
 document.getElementById('logoutBtn')?.addEventListener('click', logout);
 
-// --- EKSEKUSI AWAL ---
-console.log("Dashboard Modular diinisialisasi untuk pengguna:", userId);
+// ==========================================
+// 7. EKSEKUSI AWAL & REAL-TIME UPDATES (SMART POLLING)
+// ==========================================
+console.log("🚀 Dashboard Modular diinisialisasi untuk pengguna:", userId);
 
-fetchAndRenderDashboard();
-pollingInterval = setInterval(fetchAndRenderDashboard, 3000);
+function startRealtimeUpdates() {
+    console.log("🚀 Memulai sinkronisasi realtime dengan Firebase (Smart Polling 1 detik)...");
+    
+    // 1. Ambil data pertama kali saat halaman dimuat
+    fetchAndRenderDashboard();
+
+    // 2. Setup interval untuk mengambil data setiap 1000ms (1 detik)
+    // 1 detik adalah sweet spot: cukup cepat untuk IoT, tidak membebani Firebase
+    updateInterval = setInterval(() => {
+        fetchAndRenderDashboard();
+    }, 1000); 
+}
+
+// Jalankan saat seluruh elemen HTML sudah siap
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startRealtimeUpdates);
+} else {
+    // Jika DOM sudah siap (misal script ditaruh di paling bawah body)
+    startRealtimeUpdates();
+}
