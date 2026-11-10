@@ -7,6 +7,8 @@
 class GaugeWidget extends BaseWidget {
     constructor(key, containerId) {
         super(key, containerId);
+        // Inisialisasi objek untuk menyimpan referensi elemen DOM (Optimasi Performa)
+        this.elements = {};
         this.render();
     }
 
@@ -56,24 +58,46 @@ class GaugeWidget extends BaseWidget {
 
         // Inject ke container utama
         this.container.appendChild(wrapper);
+
+        // 🔥 OPTIMASI: Cache referensi elemen DOM SETELAH di-insert ke dalam dokumen
+        // Ini mencegah pencarian DOM berulang-ulang saat update realtime
+        this.elements = {
+            fill: document.getElementById(`fill-${this.key}`),
+            txt: document.getElementById(`txt-${this.key}`),
+            val: document.getElementById(`val-${this.key}`)
+        };
     }
 
     update(value) {
-        // VALIDASI KETAT: Gauge hanya menerima angka
-        const num = typeof value === 'number' && !isNaN(value) ? value : 0;
+        // 🔥 PERBAIKAN: Terima string atau number, lalu konversi ke float
+        // Firebase/ESP sering mengirim angka sebagai string (contoh: "75"), 
+        // validasi 'typeof === number' yang ketat akan menggagalkannya dan mengubah jadi 0.
+        const num = parseFloat(value);
+        const safeNum = isNaN(num) ? 0 : num; // Fallback ke 0 jika benar-benar bukan angka
         
-        // Kalkulasi persentase dan offset SVG
-        const pct = Math.min((num / 100) * 100, 100);
+        // Kalkulasi persentase dan offset SVG (Keliling lingkaran r=45 adalah ~283)
+        const pct = Math.min((safeNum / 100) * 100, 100);
         const offset = 283 - (283 * pct / 100);
         
-        // Update DOM Elements
-        const fill = document.getElementById(`fill-${this.key}`);
-        const txt = document.getElementById(`txt-${this.key}`);
-        const val = document.getElementById(`val-${this.key}`);
-        
-        if (fill) fill.style.strokeDashoffset = offset;
-        if (txt) txt.textContent = this.safeText(num); // Gunakan safeText
-        if (val) val.textContent = this.safeText(num);
+        // 🔥 OPTIMASI: Update DOM menggunakan referensi yang sudah di-cache
+        if (this.elements.fill) {
+            this.elements.fill.style.strokeDashoffset = offset;
+        }
+        if (this.elements.txt) {
+            this.elements.txt.textContent = this.safeText(safeNum); // Gunakan safeText dari BaseWidget
+        }
+        if (this.elements.val) {
+            this.elements.val.textContent = this.safeText(safeNum);
+        }
+    }
+
+    // Opsional: Method cleanup jika widget dihapus dari dashboard
+    destroy() {
+        this.elements = {};
+        const widgetEl = document.getElementById(`widget-${this.key}`);
+        if (widgetEl) {
+            widgetEl.remove();
+        }
     }
 }
 
